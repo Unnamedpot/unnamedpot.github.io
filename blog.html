@@ -1,0 +1,50 @@
+---
+layout: default
+title: Blog
+permalink: /blog/
+# Full listing of all blog posts.
+---
+
+<section class="section" id="blog">
+  <h2 class="section-title">All Posts</h2>
+
+  {% if site.posts.size > 0 %}
+    <ul class="post-list">
+      {% for post in site.posts %}
+        <li class="post-card">
+          {%- comment -%} Thumbnail fallback: cover -> first body image -> avatar {%- endcomment -%}
+          {% assign thumb = post.cover %}
+          {% assign thumb_external = false %}
+          {% if thumb == nil or thumb == '' %}
+            {% assign imgparts = post.content | split: '<img' %}
+            {% if imgparts.size > 1 %}
+              {% assign srcpart = imgparts[1] | split: 'src=' %}
+              {% if srcpart.size > 1 %}
+                {% assign quote = srcpart[1] | slice: 0, 1 %}
+                {% assign thumb = srcpart[1] | slice: 1, 500 | split: quote | first %}
+                {% assign thumb_external = true %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          {% if thumb == nil or thumb == '' %}{% assign thumb = '/assets/img/avatar.jpg' %}{% assign thumb_external = false %}{% endif %}
+          <a class="post-card-thumb" href="{{ post.url | relative_url }}">
+            {% if thumb_external %}<img src="{{ thumb }}" alt="{{ post.title }}" loading="lazy">{% else %}<img src="{{ thumb | relative_url }}" alt="{{ post.title }}" loading="lazy">{% endif %}
+          </a>
+          <div class="post-card-body">
+            <p class="post-meta">
+              <time datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: "%Y-%m-%d" }}
+              </time>
+            </p>
+            <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+            <p class="post-excerpt">
+              {{ post.excerpt | strip_html | truncatewords: 24 }}
+            </p>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-note">No posts yet. Add Markdown files to the _posts folder.</p>
+  {% endif %}
+</section>

@@ -26,20 +26,73 @@ layout: default
     <ul class="post-list">
       {% for post in site.posts limit: site.homepage_post_limit %}
         <li class="post-card">
-          <p class="post-meta">
-            <time datetime="{{ post.date | date_to_xmlschema }}">
-              {{ post.date | date: "%Y-%m-%d" }}
-            </time>
-          </p>
-          <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
-          <p class="post-excerpt">
-            {{ post.excerpt | strip_html | truncatewords: 24 }}
-          </p>
+          {%- comment -%} Thumbnail fallback: cover -> first body image -> avatar {%- endcomment -%}
+          {% assign thumb = post.cover %}
+          {% assign thumb_external = false %}
+          {% if thumb == nil or thumb == '' %}
+            {% assign imgparts = post.content | split: '<img' %}
+            {% if imgparts.size > 1 %}
+              {% assign srcpart = imgparts[1] | split: 'src=' %}
+              {% if srcpart.size > 1 %}
+                {% assign quote = srcpart[1] | slice: 0, 1 %}
+                {% assign thumb = srcpart[1] | slice: 1, 500 | split: quote | first %}
+                {% assign thumb_external = true %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          {% if thumb == nil or thumb == '' %}{% assign thumb = '/assets/img/avatar.jpg' %}{% assign thumb_external = false %}{% endif %}
+          <a class="post-card-thumb" href="{{ post.url | relative_url }}">
+            {% if thumb_external %}<img src="{{ thumb }}" alt="{{ post.title }}" loading="lazy">{% else %}<img src="{{ thumb | relative_url }}" alt="{{ post.title }}" loading="lazy">{% endif %}
+          </a>
+          <div class="post-card-body">
+            <p class="post-meta">
+              <time datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: "%Y-%m-%d" }}
+              </time>
+            </p>
+            <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+            <p class="post-excerpt">
+              {{ post.excerpt | strip_html | truncatewords: 24 }}
+            </p>
+          </div>
         </li>
       {% endfor %}
     </ul>
+      <a class="view-all" href="{{ '/blog/' | relative_url }}">查看全部 →</a>
   {% else %}
     <p class="empty-note">No posts yet. Add Markdown files to the _posts folder.</p>
+  {% endif %}
+</section>
+
+<section class="section" id="project">
+  <h2 class="section-title">Project</h2>
+
+  {% if site.data.projects.size > 0 %}
+    <ul class="project-list">
+      {% for project in site.data.projects limit: 3 %}
+        <li class="project-card">
+          {%- comment -%} Thumbnail fallback: project cover -> default avatar {%- endcomment -%}
+          <div class="project-card-thumb">
+            {% if project.cover and project.cover != '' %}
+              <img src="{{ project.cover | relative_url }}" alt="{{ project.name }}" loading="lazy">
+            {% else %}
+              <img src="{{ '/assets/img/avatar.jpg' | relative_url }}" alt="{{ project.name }}" loading="lazy">
+            {% endif %}
+          </div>
+          <div class="project-card-body">
+            <h3 class="project-name">{{ project.name }}{% if project.alias and project.alias != '' %} <span class="project-alias">{{ project.alias }}</span>{% endif %}</h3>
+            <p class="project-desc">{{ project.desc }}</p>
+            <div class="project-links">
+              <a href="{{ project.landing_url | relative_url }}">查看宣传页</a>
+              <a href="{{ project.github_url }}" target="_blank" rel="noopener">GitHub 源码</a>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+      <a class="view-all" href="{{ '/project/' | relative_url }}">查看全部 →</a>
+  {% else %}
+    <p class="empty-note">No projects yet.</p>
   {% endif %}
 </section>
 

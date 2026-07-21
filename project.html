@@ -1,0 +1,32 @@
+---
+layout: default
+title: Project
+permalink: /project/
+# Placeholder page for upcoming projects.
+---
+
+<section class="section" id="project">
+  <h2 class="section-title">Project</h2>
+  <ul class="project-list">
+    {% for project in site.data.projects %}
+      <li class="project-card">
+        {%- comment -%} Thumbnail fallback: project cover -> default avatar {%- endcomment -%}
+        <div class="project-card-thumb">
+          {% if project.cover and project.cover != '' %}
+            <img src="{{ project.cover | relative_url }}" alt="{{ project.name }}" loading="lazy">
+          {% else %}
+            <img src="{{ '/assets/img/avatar.jpg' | relative_url }}" alt="{{ project.name }}" loading="lazy">
+          {% endif %}
+        </div>
+        <div class="project-card-body">
+          <h3 class="project-name">{{ project.name }}{% if project.alias and project.alias != '' %} <span class="project-alias">{{ project.alias }}</span>{% endif %}</h3>
+          <p class="project-desc">{{ project.desc }}</p>
+          <div class="project-links">
+            <a href="{{ project.landing_url | relative_url }}">查看宣传页</a>
+            <a href="{{ project.github_url }}" target="_blank" rel="noopener">GitHub 源码</a>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

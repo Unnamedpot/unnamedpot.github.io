@@ -12,6 +12,9 @@
 
   <!-- Stylesheet (relative_url respects baseurl for project sites) -->
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+
+  <!-- Favicon: reuse the avatar image -->
+  <link rel="icon" type="image/jpeg" href="{{ '/assets/img/avatar.jpg' | relative_url }}">
 </head>
 <body>
   <header class="site-header">
@@ -19,9 +22,8 @@
       <a class="site-brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
       <nav class="site-nav">
         <a href="{{ '/' | relative_url }}">Home</a>
-        <a href="{{ '/#blog' | relative_url }}">Blog</a>
-        <a href="{{ '/about/' | relative_url }}">About</a>
-        <a href="{{ '/#contact' | relative_url }}">Contact</a>
+        <a href="{{ '/blog/' | relative_url }}">Blog</a>
+        <a href="{{ '/project/' | relative_url }}">Project</a>
       </nav>
     </div>
   </header>

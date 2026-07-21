@@ -1,0 +1,129 @@
+---
+permalink: /projects/virtual-takeout/
+title: 今晚不吃 Tonight, No Eat
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今晚不吃 · Tonight, No Eat — 保留点外卖的满足感，不保留外卖本身</title>
+<meta name="description" content="今晚不吃是一款虚拟外卖 App。像真实外卖一样浏览下单，但不收到食物，付款进入个人健康金账户。深夜想吃东西是正常的，你不是一个人。">
+<script src="https://storage.360buyimg.com/dist-dev/joycoder/fe-page-cdn/tailwindcss.js"></script>
+<script src="https://storage.360buyimg.com/dist-dev/joycoder/fe-page-cdn/lucide.js"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{primary:"#FF6B35",secondary:"#4ECDC4",bgsoft:"#FFF8F0",ink:"#212121",muted:"#757575"}}}};
+</script>
+<style>
+html{scroll-behavior:smooth}
+body{background:#FFF8F0;color:#212121}
+.reveal{opacity:0;transform:translateY(20px);transition:.6s}
+.reveal.show{opacity:1;transform:none}
+.grad{background:linear-gradient(120deg,#FF6B35,#4ECDC4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.night{background:linear-gradient(160deg,#2b2440,#4a4370)}
+</style>
+</head>
+<body class="font-sans antialiased">
+<header class="sticky top-0 z-50 bg-bgsoft/85 backdrop-blur border-b border-black/5">
+<nav class="max-w-6xl mx-auto h-16 px-5 flex items-center justify-between">
+<a href="#top" class="flex items-center gap-2 font-bold"><span class="w-8 h-8 rounded-xl bg-primary/15 grid place-items-center text-primary">🌙</span>今晚不吃 <span class="text-xs text-muted hidden sm:inline">Tonight, No Eat</span></a>
+<div class="hidden md:flex gap-6 text-sm text-muted"><a href="#why">为什么</a><a href="#features">功能</a><a href="#how">流程</a><a href="#care">承诺</a></div>
+<a href="#download" class="px-4 py-2 rounded-full bg-primary text-white text-sm">免费下载</a>
+</nav>
+</header>
+<section id="top" class="max-w-6xl mx-auto px-5 pt-14 pb-16 grid md:grid-cols-2 gap-10 items-center">
+<div class="reveal">
+<p class="text-secondary text-sm">一款虚拟外卖 App</p>
+<h1 class="mt-3 text-4xl md:text-5xl font-bold leading-tight">保留点外卖的<span class="grad">满足感</span>，不保留外卖本身。</h1>
+<p class="mt-5 text-muted leading-relaxed">深夜冲动点单，很多时候不是饥饿，而是大脑在寻求奖励。今晚不吃保留浏览、下单、等待的仪式，不增加额外热量摄入。</p>
+<div class="mt-7 flex gap-3 flex-wrap"><a href="#download" class="px-6 py-3 rounded-full bg-primary text-white">立即体验</a><a href="#how" class="px-6 py-3 rounded-full bg-white shadow text-ink">查看如何运作</a></div>
+<p class="mt-4 text-sm text-muted">深夜想吃东西是正常的，你不是一个人，也不需要为此自责。</p>
+</div>
+<div class="reveal">
+<div class="mx-auto w-72 h-[560px] rounded-[2.5rem] night p-3 shadow-2xl">
+<div class="h-full rounded-[2rem] bg-bgsoft p-4 flex flex-col">
+<div class="text-xs text-muted flex justify-between"><span>23:47</span><span>5G · 89%</span></div>
+<div class="mt-3 rounded-2xl bg-secondary/15 p-3 text-sm">你是真的饿了，还是只是想吃点东西</div>
+<div class="mt-3 text-xs text-primary">虚拟商家 · 凌晨炸鸡研究所</div>
+<div class="mt-2 space-y-2 text-sm">
+<div class="bg-white rounded-xl p-2 flex justify-between"><span>🍗 深夜脆皮炸鸡<br><span class="text-xs text-muted">420-560kcal · 不会实际制作</span></span><span class="text-primary">¥32</span></div>
+<div class="bg-white rounded-xl p-2 flex justify-between"><span>🍟 安慰系薯条<br><span class="text-xs text-muted">300-380kcal · 不会实际制作</span></span><span class="text-primary">¥18</span></div>
+</div>
+<div class="mt-auto bg-ink text-white rounded-2xl p-3 text-sm">付款进入健康金 · 冷静期24小时</div>
+</div>
+</div>
+</div>
+</section>
+<section id="why" class="max-w-6xl mx-auto px-5 py-14">
+<div class="reveal text-center max-w-3xl mx-auto">
+<h2 class="text-3xl font-bold">那个想点外卖的深夜，你要的可能不是食物</h2>
+<p class="mt-4 text-muted leading-relaxed">打开 App、浏览菜单、下单等待，这套流程本身会提供心理安慰。我们保留满足感，移除真实食物送达，并把付款变成对自己的投资。</p>
+</div>
+</section>
+<section id="features" class="bg-white py-16">
+<div class="max-w-6xl mx-auto px-5">
+<h2 class="reveal text-3xl font-bold text-center">六个核心功能</h2>
+<div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">1. 状态询问</h3><p class="mt-2 text-sm text-muted">下单前温柔询问，区分生理饥饿与情绪冲动。</p></article>
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">2. 虚拟商家与菜单</h3><p class="mt-2 text-sm text-muted">完整浏览下单体验，明确标识虚拟商家与不实际制作。</p></article>
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">3. 订单状态模拟</h3><p class="mt-2 text-sm text-muted">五阶段推进：接单、制作、取餐、配送、送达，并含模拟地图。</p></article>
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">4. 健康金账户</h3><p class="mt-2 text-sm text-muted">付款进入健康金，24小时冷静期后可提取或用于健康目标。</p></article>
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">5. 数据统计</h3><p class="mt-2 text-sm text-muted">查看虚拟订单、健康金累计、预计减少热量和情绪触发分布。</p></article>
+<article class="reveal p-5 rounded-3xl bg-bgsoft"><h3 class="font-semibold">6. 防沉迷保护</h3><p class="mt-2 text-sm text-muted">单笔上限¥200、单日¥500、每小时3次、4项知情确认。</p></article>
+</div>
+</div>
+</section>
+<section id="how" class="max-w-6xl mx-auto px-5 py-16">
+<h2 class="reveal text-3xl font-bold text-center">它是如何工作的</h2>
+<div class="mt-10 grid md:grid-cols-4 gap-5 text-center">
+<div class="reveal p-5 bg-white rounded-3xl"><p class="text-3xl">🛍️</p><h3 class="mt-2 font-semibold">浏览下单</h3><p class="text-sm text-muted mt-1">按真实外卖流程完成选择。</p></div>
+<div class="reveal p-5 bg-white rounded-3xl"><p class="text-3xl">💰</p><h3 class="mt-2 font-semibold">付款入金</h3><p class="text-sm text-muted mt-1">金额进入个人健康金账户。</p></div>
+<div class="reveal p-5 bg-white rounded-3xl"><p class="text-3xl">⏳</p><h3 class="mt-2 font-semibold">24小时冷静期</h3><p class="text-sm text-muted mt-1">留出时间，减少冲动决策。</p></div>
+<div class="reveal p-5 bg-white rounded-3xl"><p class="text-3xl">🌱</p><h3 class="mt-2 font-semibold">提取或投资</h3><p class="text-sm text-muted mt-1">用于旅行基金、健身卡等目标。</p></div>
+</div>
+</section>
+<section id="care" class="night text-white py-16">
+<div class="max-w-6xl mx-auto px-5 grid md:grid-cols-2 gap-8 items-start">
+<div class="reveal">
+<h2 class="text-3xl font-bold">情感安全承诺</h2>
+<p class="mt-4 text-white/75 leading-relaxed">不使用羞耻语言，不否定，不命令。我们鼓励而不评判，正常化你的感受，陪你把一次冲动变成一次更温和的选择。</p>
+</div>
+<div class="reveal space-y-3">
+<div class="bg-white/10 rounded-2xl p-4">无评判表达，替代说教式提示</div>
+<div class="bg-white/10 rounded-2xl p-4">深夜想吃是常见体验，你不是一个人</div>
+<div class="bg-white/10 rounded-2xl p-4">健康金机制让每次付款都可回到自己身上</div>
+</div>
+</div>
+</section>
+<section class="bg-white py-16">
+<div class="max-w-6xl mx-auto px-5">
+<h2 class="reveal text-3xl font-bold text-center">数据示例与信任感</h2>
+<p class="reveal text-center text-sm text-muted mt-2">以下为估算或示例数据，仅用于展示产品价值。</p>
+<div class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+<div class="reveal bg-bgsoft rounded-2xl p-4"><p class="text-3xl font-bold grad" data-count="128000">0</p><p class="text-xs text-muted mt-1">预计减少额外摄入 kcal</p></div>
+<div class="reveal bg-bgsoft rounded-2xl p-4"><p class="text-3xl font-bold grad" data-count="3200">0</p><p class="text-xs text-muted mt-1">虚拟订单次数</p></div>
+<div class="reveal bg-bgsoft rounded-2xl p-4"><p class="text-3xl font-bold grad" data-count="86000">0</p><p class="text-xs text-muted mt-1">健康金累计 ¥</p></div>
+<div class="reveal bg-bgsoft rounded-2xl p-4"><p class="text-3xl font-bold grad" data-count="92">0</p><p class="text-xs text-muted mt-1">感觉被理解比例 %</p></div>
+</div>
+</div>
+</section>
+<section id="download" class="max-w-6xl mx-auto px-5 py-16">
+<div class="reveal rounded-[2rem] bg-primary text-white p-10 text-center">
+<h2 class="text-3xl font-bold">今晚，也许可以不吃</h2>
+<p class="mt-3 text-white/85">保留满足感，把这次冲动交给更轻盈的明天。</p>
+<div class="mt-6 flex justify-center gap-3 flex-wrap"><a href="#" class="px-6 py-3 rounded-full bg-white text-primary font-semibold">App Store</a><a href="#" class="px-6 py-3 rounded-full bg-ink text-white font-semibold">Android 下载</a></div>
+</div>
+</section>
+<footer class="bg-white border-t border-black/5">
+<div class="max-w-6xl mx-auto px-5 py-10 text-sm text-muted">
+<p class="font-semibold text-ink">免责声明</p>
+<p class="mt-2">本产品不提供真实食物，不是减肥工具、医疗工具或心理治疗工具，不面向未成年人。若存在严重进食障碍或情绪困扰，请及时寻求专业帮助。</p>
+<p class="mt-4">© 2026 今晚不吃 Tonight, No Eat</p>
+</div>
+</footer>
+<script>
+// Initialize icons and lightweight interactions
+document.addEventListener("DOMContentLoaded",()=>{lucide.createIcons();const rs=document.querySelectorAll(".reveal");const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("show");io.unobserve(e.target);}}),{threshold:.12});rs.forEach(el=>io.observe(el));const cs=document.querySelectorAll("[data-count]");const co=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const el=e.target,t=parseInt(el.dataset.count,10),s=performance.now(),d=1200;const step=n=>{const p=Math.min((n-s)/d,1);el.textContent=Math.floor((1-Math.pow(1-p,3))*t).toLocaleString("en-US");if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step);co.unobserve(el);}),{threshold:.4});cs.forEach(el=>co.observe(el));});
+</script>
+</body>
+</html>

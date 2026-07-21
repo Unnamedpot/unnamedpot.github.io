@@ -244,17 +244,47 @@ img {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
+/* Bordered horizontal card: thumbnail on the left, text on the right */
 .post-card {
-  display: block;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--hairline);
-  transition: padding-left 0.15s ease;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .post-card:hover {
-  padding-left: 6px;
+  border-color: var(--fg-faint);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Thumbnail container: fixed square, image cropped to cover */
+.post-card-thumb {
+  flex: 0 0 auto;
+  width: 88px;
+  height: 88px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.post-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text column */
+.post-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .post-card .post-meta {
@@ -262,7 +292,6 @@ img {
   font-size: 13px;
   color: var(--fg-faint);
   margin: 0 0 4px;
-  order: -1;
 }
 
 .post-card h3 {
@@ -460,4 +489,95 @@ img {
   .post .post-title {
     font-size: 26px;
   }
+}
+
+/* ---- Project: card list (reuses tokens from post-card/contact-card) -- */
+.project-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Bordered horizontal card, same layout as post cards */
+.project-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.project-card:hover {
+  border-color: var(--fg-faint);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Thumbnail container: reuse post-card thumbnail sizing */
+.project-card-thumb {
+  flex: 0 0 auto;
+  width: 88px;
+  height: 88px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.project-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text column */
+.project-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.project-name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.project-alias {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--fg-faint);
+}
+
+.project-desc {
+  font-size: 14.5px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+  margin: 6px 0 10px;
+}
+
+.project-links {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+}
+
+/* ---- "View all" section link ------------------------------------ */
+.view-all {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--fg-faint);
+  text-decoration: none;
+}
+
+.view-all:hover {
+  color: var(--fg);
+  text-decoration: underline;
 }

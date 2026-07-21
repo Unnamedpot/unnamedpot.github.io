@@ -42,11 +42,17 @@ github_username: "unnamedpot"
 # repository with zero extra setup (no local Ruby/Jekyll needed).
 # ------------------------------------------------------------------
 
+# Explicitly disable any gem theme. Without this, the github-pages gem
+# defaults to jekyll-theme-primer, whose assets/css/style.scss compiles to
+# normalize.css and overwrites our local assets/css/style.css at the same
+# output path. An empty theme keeps our own _layouts/ and assets/ authoritative.
+theme:
+
 # Permalink style for blog posts.
 permalink: /blog/:year/:month/:day/:title/
 
 # Number of posts to show on the homepage list.
-homepage_post_limit: 10
+homepage_post_limit: 3
 
 # Files/folders excluded from the build output.
 exclude:
