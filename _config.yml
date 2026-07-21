@@ -26,7 +26,7 @@ url: "https://unnamedpot.github.io"
 # "baseurl" is the subpath of your site.
 # - Leave EMPTY ("") if this is a USER site (yourusername.github.io).
 # - Set to "/reponame" if this is a PROJECT site (served at /reponame).
-# CHANGE ME (or leave "" for a user site).
+# Configured as a USER site (served at root, baseurl empty).
 baseurl: ""
 
 # ------------------------------------------------------------------

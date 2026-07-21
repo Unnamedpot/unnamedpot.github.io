@@ -1,27 +1,27 @@
 /* ==================================================================
-   Personal website styles — Direction B: Linear Precision Dark
-   Authored near-black warm-neutral base, restrained periwinkle accent,
-   gradient hairline borders, strict grid, subtle hover states.
-   Dependency-free. Default dark (does NOT follow OS light preference).
+   Personal website styles — Direction A: Vercel/GitHub Minimal
+   Light background, mono-neutral palette with a single accent,
+   generous whitespace, centered single column (~728px),
+   hairline (1px) borders, no shadows, divider-list blog.
+   Dependency-free. Light theme.
    ================================================================== */
 
 /* ---- Design tokens ---------------------------------------------- */
 :root {
-  /* Authored dark: near-black neutral with a faint warm lift, not blue navy */
-  --bg: #0b0b0d;
-  --bg-raise: #131316;
-  --bg-card: #141417;
-  --fg: #ededef;          /* on --bg ~14:1 */
-  --fg-muted: #a1a1a8;    /* on --bg ~7:1, safe body contrast */
-  --fg-faint: #6e6e77;    /* for large/secondary labels only */
-  --line: #26262b;
-  --line-strong: #333339;
-  --accent: #8b8bf5;      /* restrained periwinkle, Linear-adjacent */
-  --accent-soft: rgba(139, 139, 245, 0.12);
+  /* Neutral scale + single accent (near-black text, GitHub blue accent) */
+  --bg: #ffffff;
+  --fg: #171717;
+  --fg-muted: #666666;    /* contrast on white ~5.7:1, safe for >=14px */
+  --fg-faint: #8a8a8a;
+  --hairline: #e6e6e6;
+  --hairline-strong: #d4d4d4;
+  --accent: #0969da;      /* GitHub blue */
+  --accent-hover: #0550ae;
+  --tag-bg: #f6f6f6;
 
-  --radius: 10px;
-  --radius-sm: 8px;
-  --maxw: 1080px;
+  --radius: 6px;
+  --radius-sm: 6px;
+  --maxw: 728px;
 
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
@@ -35,39 +35,34 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--fg);
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;
-  /* Extremely subtle top vignette, authored not neon */
-  background-image: radial-gradient(
-    1200px 480px at 50% -10%,
-    rgba(139, 139, 245, 0.06),
-    transparent 70%
-  );
-  background-repeat: no-repeat;
-  background-attachment: fixed;
 }
 
 a {
-  color: var(--fg);
+  color: var(--accent);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
 a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 h1, h2, h3 {
   line-height: 1.2;
-  font-weight: 620;
+  font-weight: 650;
 }
 
 img {
@@ -78,71 +73,61 @@ img {
   width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 24px;
 }
 
-/* ---- Header / nav ----------------------------------------------- */
+/* ---- Header / nav (minimal, hairline bottom border) ------------- */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: saturate(140%) blur(10px);
-  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid var(--hairline);
 }
 
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 58px;
+  padding: 14px 0;
 }
 
 .site-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: -0.01em;
   color: var(--fg);
-}
-
-/* Gradient brand dot, echoes the info-card accent */
-.site-brand::before {
-  content: "";
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, var(--accent), #b7b7fb);
 }
 
 .site-brand:hover {
   color: var(--fg);
+  text-decoration: none;
 }
 
 .site-nav {
   display: flex;
-  gap: 26px;
+  gap: 22px;
 }
 
 .site-nav a {
   color: var(--fg-muted);
   font-size: 14px;
-  font-weight: 500;
 }
 
 .site-nav a:hover {
   color: var(--fg);
+  text-decoration: none;
 }
 
 /* ---- Main / footer ---------------------------------------------- */
 .site-main {
-  padding: 0 0 40px;
+  padding: 0 0 20px;
 }
 
 .site-footer {
-  border-top: 1px solid var(--line);
-  padding: 40px 0 60px;
+  border-top: 1px solid var(--hairline);
+  padding: 40px 0 64px;
   color: var(--fg-faint);
   font-size: 13px;
 }
@@ -167,133 +152,77 @@ img {
 
 /* ---- Section helpers -------------------------------------------- */
 .section {
-  padding: 44px 0;
-  border-top: 1px solid var(--line);
+  padding: 32px 0;
+  border-top: 1px solid var(--hairline);
   margin: 0;
 }
 
 .section-title {
-  font-size: 13px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--fg-faint);
   font-weight: 600;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
-/* ---- Hero: split grid (text left / info card right) ------------- */
+/* ---- Hero / intro: centered single column ----------------------- */
 .hero {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 40px;
-  align-items: center;
-  padding: 84px 0 64px;
+  padding: 72px 0 40px;
 }
 
-.hero-text {
-  min-width: 0;
+.hero-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--fg);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 26px;
+  /* Avatar placeholder: initials block. Replace with real image later. */
 }
 
 .hero-eyebrow {
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 0.06em;
-  color: var(--accent);
-  margin: 0 0 18px;
+  color: var(--fg-muted);
+  margin: 0 0 12px;
   text-transform: uppercase;
 }
 
-.hero-text h1 {
-  font-size: 44px;
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  margin: 0 0 16px;
-  font-weight: 620;
+.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  font-weight: 650;
 }
 
 .hero-tagline {
-  font-size: 18px;
+  font-size: 17px;
   color: var(--fg-muted);
   margin: 0 0 20px;
-  max-width: 46ch;
 }
 
 .hero-bio {
-  font-size: 15px;
-  color: var(--fg-muted);
-  max-width: 52ch;
+  font-size: 16px;
+  color: var(--fg);
+  max-width: 60ch;
   line-height: 1.7;
   margin: 0;
 }
 
-/* Gradient-border info card (right of hero) */
-.hero-card {
-  position: relative;
-  border-radius: 14px;
-  padding: 1px;
-  background: linear-gradient(
-    160deg,
-    var(--line-strong),
-    rgba(139, 139, 245, 0.35) 45%,
-    var(--line)
-  );
-}
-
-.hero-card-inner {
-  background: var(--bg-card);
-  border-radius: 13px;
-  padding: 26px;
-}
-
-.hero-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  background: linear-gradient(150deg, #2a2a34, #17171b);
-  border: 1px solid var(--line-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--fg);
-  margin-bottom: 18px;
-}
-
-.card-name {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 2px;
-}
-
-.card-role {
-  font-size: 13px;
-  color: var(--fg-faint);
-  margin: 0 0 18px;
-}
-
-.card-stat {
-  display: flex;
-  justify-content: space-between;
-  padding: 9px 0;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
-}
-
-.card-stat span:first-child {
-  color: var(--fg-faint);
-}
-
-.card-stat span:last-child {
-  font-family: var(--mono);
-  color: var(--fg-muted);
-}
-
-/* ---- Skills grid ------------------------------------------------ */
+/* ---- Skills as quiet tags --------------------------------------- */
 .skills-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -302,59 +231,45 @@ img {
 .skills-list li {
   font-family: var(--mono);
   font-size: 13px;
-  color: var(--fg-muted);
-  background: var(--bg-raise);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  text-align: center;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.skills-list li:hover {
-  border-color: var(--accent);
   color: var(--fg);
-  background: var(--accent-soft);
+  background: var(--tag-bg);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 5px 10px;
 }
 
-/* ---- Blog card grid --------------------------------------------- */
+/* ---- Blog: divider list, NOT cards ------------------------------ */
 .post-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
 }
 
 .post-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  display: block;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--hairline);
+  transition: padding-left 0.15s ease;
 }
 
 .post-card:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
+  padding-left: 6px;
 }
 
 .post-card .post-meta {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--fg-faint);
-  margin: 0 0 12px;
+  margin: 0 0 4px;
   order: -1;
 }
 
 .post-card h3 {
-  margin: 0 0 10px;
-  font-size: 16px;
+  margin: 0;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 .post-card h3 a {
@@ -363,13 +278,14 @@ img {
 
 .post-card:hover h3 a {
   color: var(--accent);
+  text-decoration: none;
 }
 
 .post-card .post-excerpt {
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--fg-muted);
   line-height: 1.6;
-  margin: 0;
+  margin: 6px 0 0;
 }
 
 .empty-note {
@@ -377,61 +293,67 @@ img {
   font-style: italic;
 }
 
-/* ---- Contact ---------------------------------------------------- */
+/* ---- Contact: minimal row list ---------------------------------- */
 .contact-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .contact-card {
-  display: block;
-  background: var(--bg-raise);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
   color: var(--fg);
-  transition: border-color 0.15s ease;
 }
 
 .contact-card:hover {
-  border-color: var(--accent);
+  text-decoration: none;
 }
 
 .contact-card strong {
-  display: block;
   font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--fg-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
+  width: 84px;
+  flex-shrink: 0;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .contact-card span {
-  font-size: 14px;
-  color: var(--fg);
+  font-size: 15px;
+  color: var(--accent);
   word-break: break-all;
+}
+
+.contact-card:hover span {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ---- Single post ------------------------------------------------ */
 .post {
-  padding: 44px 0 0;
+  padding: 56px 0 0;
 }
 
 .post-header {
   margin-bottom: 28px;
 }
 
-.post-title {
-  font-size: 34px;
-  line-height: 1.12;
+.post .post-title {
+  font-size: 32px;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   margin: 0 0 10px;
+  font-weight: 650;
 }
 
-.post-meta {
+.post .post-meta {
   font-family: var(--mono);
   color: var(--fg-faint);
   font-size: 13px;
@@ -441,6 +363,7 @@ img {
 .post-content {
   font-size: 16px;
   color: var(--fg);
+  line-height: 1.75;
 }
 
 .post-content h2 {
@@ -458,7 +381,9 @@ img {
 }
 
 .post-content a:hover {
+  color: var(--accent-hover);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .post-content pre,
@@ -468,16 +393,16 @@ img {
 }
 
 .post-content code {
-  background-color: var(--bg-raise);
-  border: 1px solid var(--line);
+  background-color: var(--tag-bg);
+  border: 1px solid var(--hairline);
   border-radius: 4px;
   padding: 1px 5px;
   color: var(--fg);
 }
 
 .post-content pre {
-  background-color: var(--bg-raise);
-  border: 1px solid var(--line);
+  background-color: var(--tag-bg);
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
   padding: 16px;
   overflow-x: auto;
@@ -492,7 +417,7 @@ img {
 .post-content blockquote {
   margin: 20px 0;
   padding: 4px 18px;
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--hairline-strong);
   color: var(--fg-muted);
 }
 
@@ -503,7 +428,7 @@ img {
 .post-footer {
   margin-top: 40px;
   padding-top: 20px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--hairline);
 }
 
 .back-link {
@@ -517,39 +442,21 @@ img {
   color: var(--accent);
 }
 
-/* ---- Responsive: collapse to single column on mobile ------------ */
-@media (max-width: 860px) {
-  .container {
-    padding: 0 20px;
-  }
-
+/* ---- Responsive: mobile ----------------------------------------- */
+@media (max-width: 600px) {
   .hero {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding: 56px 0 40px;
+    padding: 48px 0 32px;
   }
 
-  .hero-text h1 {
-    font-size: 34px;
-  }
-
-  .skills-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .post-list {
-    grid-template-columns: 1fr;
-  }
-
-  .contact-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .hero h1 {
+    font-size: 27px;
   }
 
   .site-nav {
     gap: 16px;
   }
 
-  .post-title {
-    font-size: 28px;
+  .post .post-title {
+    font-size: 26px;
   }
 }
