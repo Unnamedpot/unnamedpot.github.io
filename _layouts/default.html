@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Page title: use page.title if present, otherwise the site title -->
+  <title>{% if page.title %}{{ page.title }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+
+  <!-- Meta description for SEO / link previews -->
+  <meta name="description" content="{{ page.description | default: site.description }}">
+
+  <!-- Stylesheet (relative_url respects baseurl for project sites) -->
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="site-brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+      <nav class="site-nav">
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <a href="{{ '/#blog' | relative_url }}">Blog</a>
+        <a href="{{ '/about/' | relative_url }}">About</a>
+        <a href="{{ '/#contact' | relative_url }}">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <div class="container">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>
+        &copy; {{ 'now' | date: "%Y" }} {{ site.title }}.
+        Built with <a href="https://jekyllrb.com/">Jekyll</a> &
+        hosted on <a href="https://pages.github.com/">GitHub Pages</a>.
+      </p>
+      <!-- Direction B footer tone: precision over noise -->
+      <p class="footer-links">
+        <a href="https://github.com/{{ site.github_username }}">GitHub</a>
+        <a href="mailto:{{ site.email }}">Email</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

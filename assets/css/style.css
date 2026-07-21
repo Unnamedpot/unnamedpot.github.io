@@ -1,0 +1,555 @@
+/* ==================================================================
+   Personal website styles — Direction B: Linear Precision Dark
+   Authored near-black warm-neutral base, restrained periwinkle accent,
+   gradient hairline borders, strict grid, subtle hover states.
+   Dependency-free. Default dark (does NOT follow OS light preference).
+   ================================================================== */
+
+/* ---- Design tokens ---------------------------------------------- */
+:root {
+  /* Authored dark: near-black neutral with a faint warm lift, not blue navy */
+  --bg: #0b0b0d;
+  --bg-raise: #131316;
+  --bg-card: #141417;
+  --fg: #ededef;          /* on --bg ~14:1 */
+  --fg-muted: #a1a1a8;    /* on --bg ~7:1, safe body contrast */
+  --fg-faint: #6e6e77;    /* for large/secondary labels only */
+  --line: #26262b;
+  --line-strong: #333339;
+  --accent: #8b8bf5;      /* restrained periwinkle, Linear-adjacent */
+  --accent-soft: rgba(139, 139, 245, 0.12);
+
+  --radius: 10px;
+  --radius-sm: 8px;
+  --maxw: 1080px;
+
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ---- Base ------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  /* Extremely subtle top vignette, authored not neon */
+  background-image: radial-gradient(
+    1200px 480px at 50% -10%,
+    rgba(139, 139, 245, 0.06),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+a {
+  color: var(--fg);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+  font-weight: 620;
+}
+
+img {
+  max-width: 100%;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ---- Header / nav ----------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 58px;
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg);
+}
+
+/* Gradient brand dot, echoes the info-card accent */
+.site-brand::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--accent), #b7b7fb);
+}
+
+.site-brand:hover {
+  color: var(--fg);
+}
+
+.site-nav {
+  display: flex;
+  gap: 26px;
+}
+
+.site-nav a {
+  color: var(--fg-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.site-nav a:hover {
+  color: var(--fg);
+}
+
+/* ---- Main / footer ---------------------------------------------- */
+.site-main {
+  padding: 0 0 40px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 40px 0 60px;
+  color: var(--fg-faint);
+  font-size: 13px;
+}
+
+.site-footer p {
+  margin: 0 0 6px;
+}
+
+.site-footer a {
+  color: var(--fg-muted);
+}
+
+.site-footer a:hover {
+  color: var(--fg);
+}
+
+.footer-links {
+  display: flex;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+/* ---- Section helpers -------------------------------------------- */
+.section {
+  padding: 44px 0;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-faint);
+  font-weight: 600;
+  margin: 0 0 22px;
+}
+
+/* ---- Hero: split grid (text left / info card right) ------------- */
+.hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 40px;
+  align-items: center;
+  padding: 84px 0 64px;
+}
+
+.hero-text {
+  min-width: 0;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin: 0 0 18px;
+  text-transform: uppercase;
+}
+
+.hero-text h1 {
+  font-size: 44px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+  font-weight: 620;
+}
+
+.hero-tagline {
+  font-size: 18px;
+  color: var(--fg-muted);
+  margin: 0 0 20px;
+  max-width: 46ch;
+}
+
+.hero-bio {
+  font-size: 15px;
+  color: var(--fg-muted);
+  max-width: 52ch;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Gradient-border info card (right of hero) */
+.hero-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    var(--line-strong),
+    rgba(139, 139, 245, 0.35) 45%,
+    var(--line)
+  );
+}
+
+.hero-card-inner {
+  background: var(--bg-card);
+  border-radius: 13px;
+  padding: 26px;
+}
+
+.hero-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #2a2a34, #17171b);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 18px;
+}
+
+.card-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+
+.card-role {
+  font-size: 13px;
+  color: var(--fg-faint);
+  margin: 0 0 18px;
+}
+
+.card-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.card-stat span:first-child {
+  color: var(--fg-faint);
+}
+
+.card-stat span:last-child {
+  font-family: var(--mono);
+  color: var(--fg-muted);
+}
+
+/* ---- Skills grid ------------------------------------------------ */
+.skills-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.skills-list li {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg-muted);
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.skills-list li:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+  background: var(--accent-soft);
+}
+
+/* ---- Blog card grid --------------------------------------------- */
+.post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.post-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.post-card .post-meta {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--fg-faint);
+  margin: 0 0 12px;
+  order: -1;
+}
+
+.post-card h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.post-card h3 a {
+  color: var(--fg);
+}
+
+.post-card:hover h3 a {
+  color: var(--accent);
+}
+
+.post-card .post-excerpt {
+  font-size: 14px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.empty-note {
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+/* ---- Contact ---------------------------------------------------- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.contact-card {
+  display: block;
+  background: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  color: var(--fg);
+  transition: border-color 0.15s ease;
+}
+
+.contact-card:hover {
+  border-color: var(--accent);
+}
+
+.contact-card strong {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.contact-card span {
+  font-size: 14px;
+  color: var(--fg);
+  word-break: break-all;
+}
+
+/* ---- Single post ------------------------------------------------ */
+.post {
+  padding: 44px 0 0;
+}
+
+.post-header {
+  margin-bottom: 28px;
+}
+
+.post-title {
+  font-size: 34px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+.post-meta {
+  font-family: var(--mono);
+  color: var(--fg-faint);
+  font-size: 13px;
+  margin: 0;
+}
+
+.post-content {
+  font-size: 16px;
+  color: var(--fg);
+}
+
+.post-content h2 {
+  font-size: 22px;
+  margin-top: 36px;
+}
+
+.post-content h3 {
+  font-size: 18px;
+  margin-top: 28px;
+}
+
+.post-content a {
+  color: var(--accent);
+}
+
+.post-content a:hover {
+  text-decoration: underline;
+}
+
+.post-content pre,
+.post-content code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+.post-content code {
+  background-color: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--fg);
+}
+
+.post-content pre {
+  background-color: var(--bg-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.post-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.post-content blockquote {
+  margin: 20px 0;
+  padding: 4px 18px;
+  border-left: 3px solid var(--accent);
+  color: var(--fg-muted);
+}
+
+.post-content img {
+  border-radius: var(--radius-sm);
+}
+
+.post-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.back-link {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+/* ---- Responsive: collapse to single column on mobile ------------ */
+@media (max-width: 860px) {
+  .container {
+    padding: 0 20px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 56px 0 40px;
+  }
+
+  .hero-text h1 {
+    font-size: 34px;
+  }
+
+  .skills-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .post-list {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .site-nav {
+    gap: 16px;
+  }
+
+  .post-title {
+    font-size: 28px;
+  }
+}

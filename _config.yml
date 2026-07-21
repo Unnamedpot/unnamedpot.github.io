@@ -1,0 +1,56 @@
+# ===================================================================
+# Site settings
+# NOTE: Fields marked with "CHANGE ME" must be updated by the user.
+# ===================================================================
+
+# Your site title, shown in the header and browser tab. CHANGE ME.
+title: "不愿透露姓名的锅"
+
+# Short site description used in meta tags and the intro. CHANGE ME.
+description: "不愿透露姓名的锅"
+
+# A one-line tagline shown under your name on the homepage. CHANGE ME.
+tagline: "广西西宁，青海海宁，浙江江宁，江苏苏宁（已解散）"
+
+# ------------------------------------------------------------------
+# URL settings
+# ------------------------------------------------------------------
+# "url" is the base hostname & protocol for your site.
+# For a GitHub Pages USER site (yourusername.github.io) use:
+#   url: "https://yourusername.github.io"
+# For a GitHub Pages PROJECT site (yourusername.github.io/reponame) use:
+#   url: "https://yourusername.github.io"
+# CHANGE ME.
+url: "https://unnamedpot.github.io"
+
+# "baseurl" is the subpath of your site.
+# - Leave EMPTY ("") if this is a USER site (yourusername.github.io).
+# - Set to "/reponame" if this is a PROJECT site (served at /reponame).
+# CHANGE ME (or leave "" for a user site).
+baseurl: ""
+
+# ------------------------------------------------------------------
+# Social / contact links (used in the Contact section).
+# Provide just the username; templates build the full URL.
+# CHANGE ME.
+# ------------------------------------------------------------------
+github_username: "unnamedpot"
+
+# ------------------------------------------------------------------
+# Build settings
+# We DO NOT use an external gem theme, so GitHub Pages builds this
+# repository with zero extra setup (no local Ruby/Jekyll needed).
+# ------------------------------------------------------------------
+
+# Permalink style for blog posts.
+permalink: /blog/:year/:month/:day/:title/
+
+# Number of posts to show on the homepage list.
+homepage_post_limit: 10
+
+# Files/folders excluded from the build output.
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
