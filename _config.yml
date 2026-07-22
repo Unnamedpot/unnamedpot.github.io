@@ -48,6 +48,14 @@ github_username: "unnamedpot"
 # output path. An empty theme keeps our own _layouts/ and assets/ authoritative.
 theme:
 
+# Collections. The "projects" collection drives project detail pages,
+# mirroring how _posts drives the blog. Each _projects/*.md becomes its
+# own page at /project/:name/.
+collections:
+  projects:
+    output: true
+    permalink: /project/:name/
+
 # Permalink style for blog posts.
 permalink: /blog/:year/:month/:day/:title/
 

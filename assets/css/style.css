@@ -501,7 +501,12 @@ img {
   gap: 14px;
 }
 
-/* Bordered horizontal card, same layout as post cards */
+/* List item wrapper for each project card (li is required as ul's only valid child) */
+.project-list .project-card-item {
+  list-style: none;
+}
+
+/* Bordered horizontal card, same layout as post cards. Whole card is a link. */
 .project-card {
   display: flex;
   gap: 14px;
@@ -509,6 +514,8 @@ img {
   padding: 14px;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
