@@ -69,7 +69,8 @@ layout: default
 
   {% if site.projects.size > 0 %}
     <ul class="project-list">
-      {% for project in site.projects limit: 3 %}
+      {% assign sorted_projects = site.projects | sort: 'date' | reverse %}
+      {% for project in sorted_projects limit: 5 %}
         <li class="project-card-item">
         <a class="project-card" href="{{ project.url | relative_url }}">
           {%- comment -%} Thumbnail fallback: project cover -> default avatar {%- endcomment -%}

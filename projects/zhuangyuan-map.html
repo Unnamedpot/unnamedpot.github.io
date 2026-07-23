@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明清状元籍贯分布地图</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft YaHei', SimSun, sans-serif; background: #1a1a2e; color: #eee; }
+  #header {
+    background: linear-gradient(135deg, #16213e, #0f3460);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    z-index: 1000; position: relative;
+  }
+  #header h1 { font-size: 22px; color: #e2b96f; letter-spacing: 2px; }
+  #header p { font-size: 13px; color: #aaa; margin-top: 3px; }
+  #controls {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 7px 16px; border-radius: 20px; border: none; cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all 0.2s;
+    font-weight: bold; letter-spacing: 1px;
+  }
+  .btn-all  { background: #e2b96f; color: #1a1a2e; }
+  .btn-ming { background: #c0392b; color: #fff; }
+  .btn-qing { background: #2980b9; color: #fff; }
+  .btn.active, .btn:hover { transform: scale(1.07); box-shadow: 0 0 10px rgba(226,185,111,0.4); }
+  #stats {
+    display: flex; gap: 18px; font-size: 13px; color: #aaa;
+  }
+  .stat-item span { font-size: 18px; font-weight: bold; }
+  .stat-ming { color: #e74c3c; }
+  .stat-qing { color: #3498db; }
+  #map { width: 100%; height: calc(100vh - 130px); }
+  .leaflet-popup-content-wrapper {
+    background: #16213e; border: 1px solid #e2b96f;
+    border-radius: 8px; color: #eee;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .leaflet-popup-tip { background: #16213e; }
+  .popup-title {
+    font-size: 15px; font-weight: bold; color: #e2b96f;
+    border-bottom: 1px solid #2d4a7a; padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .popup-dynasty { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-bottom: 6px; }
+  .popup-ming { background: #7f1c14; color: #f9a8a8; }
+  .popup-qing { background: #1a4a7a; color: #a8c8f9; }
+  .popup-list { max-height: 240px; overflow-y: auto; }
+  .popup-item {
+    padding: 5px 0; border-bottom: 1px solid #2d4a7a; font-size: 13px;
+    display: flex; gap: 8px; align-items: baseline;
+  }
+  .popup-item:last-child { border-bottom: none; }
+  .popup-year { color: #aaa; font-size: 12px; white-space: nowrap; }
+  .popup-name { color: #f0e0b0; }
+  .popup-from { color: #80a8d0; font-size: 11px; }
+  .legend {
+    position: absolute; bottom: 30px; right: 10px;
+    background: rgba(22,33,62,0.95); border: 1px solid #2d4a7a;
+    border-radius: 8px; padding: 12px 16px; z-index: 1000;
+    font-size: 13px; min-width: 150px;
+  }
+  .legend h4 { color: #e2b96f; margin-bottom: 8px; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .dot-ming { background: #e74c3c; }
+  .dot-qing { background: #3498db; }
+  .dot-both { background: #9b59b6; }
+  #tooltip {
+    position:fixed; background: rgba(22,33,62,0.97); border: 1px solid #e2b96f;
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; pointer-events: none;
+    display: none; z-index: 9999; color: #eee; max-width: 220px;
+  }
+  #footer {
+    background: #0f1923; color: #555; font-size: 11px;
+    text-align: center; padding: 6px; height: 26px;
+  }
+  /* scrollbar */
+  .popup-list::-webkit-scrollbar { width: 4px; }
+  .popup-list::-webkit-scrollbar-track { background: #16213e; }
+  .popup-list::-webkit-scrollbar-thumb { background: #2d4a7a; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="header">
+  <div>
+    <h1>明清状元籍贯分布地图</h1>
+    <p>Ming & Qing Dynasty Imperial Examination Champions — Hometown Distribution</p>
+  </div>
+  <div id="controls">
+    <button class="btn btn-all active" onclick="filterDynasty('all')">全部</button>
+    <button class="btn btn-ming" onclick="filterDynasty('ming')">明朝 (89人)</button>
+    <button class="btn btn-qing" onclick="filterDynasty('qing')">清朝 (114人)</button>
+  </div>
+  <div id="stats">
+    <div class="stat-item">总计：<span id="total-count" style="color:#e2b96f">—</span> 人</div>
+    <div class="stat-item">明朝：<span class="stat-ming" id="ming-count">—</span></div>
+    <div class="stat-item">清朝：<span class="stat-qing" id="qing-count">—</span></div>
+  </div>
+</div>
+<div id="map"></div>
+<div id="footer">数据来源：维基百科《明朝状元列表》《清朝状元列表》 · 地图：高德地图</div>
+<div id="tooltip"></div>
+
+<script>
+// ============================================================
+// Data: Ming Dynasty Zhuangyuan (89 entries)
+// coords: approximate [lat, lng] of birthplace city/county
+// ============================================================
+const mingData = [
+  {year:1371, name:"吴伯宗", province:"江西", place:"江西抚州府金溪县", lat:27.92, lng:116.77},
+  {year:1385, name:"丁显",   province:"福建", place:"福建建宁府建阳县", lat:27.33, lng:118.12},
+  {year:1388, name:"任亨泰", province:"湖广", place:"湖广襄阳府襄阳县", lat:32.01, lng:112.12},
+  {year:1391, name:"黄观",   province:"南直隶", place:"南直隶池州府贵池县", lat:30.66, lng:117.48},
+  {year:1394, name:"张信",   province:"浙江", place:"浙江宁波府定海县", lat:29.99, lng:122.10},
+  {year:1397, name:"陈䢿",   province:"福建", place:"福建福州府闽县",    lat:26.07, lng:119.30},
+  {year:1397, name:"韩克忠", province:"山东", place:"山东东昌府武城县",  lat:37.08, lng:116.08},
+  {year:1400, name:"胡广",   province:"江西", place:"江西吉安府吉水县",  lat:27.21, lng:115.13},
+  {year:1404, name:"曾棨",   province:"江西", place:"江西吉安府永丰县",  lat:27.33, lng:115.42},
+  {year:1406, name:"林环",   province:"福建", place:"福建兴化府莆田县",  lat:25.45, lng:119.01},
+  {year:1411, name:"萧时中", province:"江西", place:"江西吉安府庐陵县",  lat:27.11, lng:114.98},
+  {year:1412, name:"马铎",   province:"福建", place:"福建福州府长乐县",  lat:25.97, lng:119.52},
+  {year:1415, name:"陈循",   province:"江西", place:"江西吉安府泰和县",  lat:26.80, lng:114.91},
+  {year:1418, name:"李骐",  province:"福建", place:"福建福州府长乐县",  lat:25.97, lng:119.52},
+  {year:1421, name:"曾鹤龄", province:"江西", place:"江西吉安府泰和县",  lat:26.80, lng:114.91},
+  {year:1424, name:"邢宽",   province:"南直隶", place:"南直隶庐州府无为州", lat:31.30, lng:117.91},
+  {year:1427, name:"马愉",   province:"山东", place:"山东青州府临朐县",  lat:36.51, lng:118.54},
+  {year:1430, name:"林震",   province:"福建", place:"福建漳州府长泰县",  lat:24.62, lng:117.75},
+  {year:1433, name:"曹鼐",   province:"北直隶", place:"北直隶真定府宁晋县", lat:37.62, lng:115.02},
+  {year:1436, name:"周旋",   province:"浙江", place:"浙江温州府永嘉县",  lat:28.01, lng:120.67},
+  {year:1439, name:"施槃",   province:"南直隶", place:"南直隶苏州府吴县", lat:31.30, lng:120.62},
+  {year:1442, name:"刘俨",   province:"江西", place:"江西吉安府吉水县",  lat:27.21, lng:115.13},
+  {year:1445, name:"商辂",   province:"浙江", place:"浙江严州府淳安县",  lat:29.61, lng:119.04},
+  {year:1448, name:"彭时",   province:"江西", place:"江西吉安府安福县",  lat:27.39, lng:114.62},
+  {year:1451, name:"柯潜",   province:"福建", place:"福建兴化府莆田县",  lat:25.45, lng:119.01},
+  {year:1454, name:"孙贤",   province:"河南", place:"河南开封府杞县",    lat:34.55, lng:114.78},
+  {year:1457, name:"黎淳",   province:"湖广", place:"湖广岳州府华容县",  lat:29.53, lng:112.55},
+  {year:1460, name:"王一夔", province:"江西", place:"江西南昌府新建县",  lat:28.69, lng:115.82},
+  {year:1464, name:"彭教",   province:"江西", place:"江西吉安府吉水县",  lat:27.21, lng:115.13},
+  {year:1466, name:"罗伦",   province:"江西", place:"江西吉安府永丰县",  lat:27.33, lng:115.42},
+  {year:1469, name:"张昇",   province:"江西", place:"江西建昌府南城县",  lat:27.06, lng:116.65},
+  {year:1472, name:"吴宽",   province:"南直隶", place:"南直隶苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1475, name:"谢迁",   province:"浙江", place:"浙江绍兴府余姚县",  lat:30.03, lng:121.15},
+  {year:1478, name:"曾彦",   province:"江西", place:"江西吉安府泰和县",  lat:26.80, lng:114.91},
+  {year:1481, name:"王华",   province:"浙江", place:"浙江绍兴府余姚县",  lat:30.03, lng:121.15},
+  {year:1484, name:"李旻",   province:"浙江", place:"浙江杭州府钱塘县",  lat:30.25, lng:120.16},
+  {year:1487, name:"费宏",   province:"江西", place:"江西广信府铅山县",  lat:28.31, lng:117.72},
+  {year:1490, name:"钱福",   province:"南直隶", place:"南直隶松江府华亭县", lat:31.02, lng:121.10},
+  {year:1493, name:"毛澄",   province:"南直隶", place:"南直隶苏州府昆山县", lat:31.38, lng:120.98},
+  {year:1496, name:"朱希周", province:"南直隶", place:"南直隶苏州府昆山县", lat:31.38, lng:120.98},
+  {year:1499, name:"伦文叙", province:"广东", place:"广东广州府南海县",  lat:23.03, lng:113.14},
+  {year:1502, name:"康海",   province:"陕西", place:"陕西西安府武功县",  lat:34.26, lng:108.21},
+  {year:1505, name:"顾鼎臣", province:"南直隶", place:"南直隶苏州府昆山县", lat:31.38, lng:120.98},
+  {year:1508, name:"吕柟",   province:"陕西", place:"陕西西安府高陵县",  lat:34.53, lng:109.09},
+  {year:1511, name:"杨慎",   province:"四川", place:"四川成都府新都县",  lat:30.82, lng:104.16},
+  {year:1514, name:"唐皋",   province:"南直隶", place:"南直隶徽州府歙县", lat:29.87, lng:118.43},
+  {year:1517, name:"舒芬",   province:"江西", place:"江西南昌府进贤县",  lat:28.37, lng:116.27},
+  {year:1521, name:"杨维聪", province:"北直隶", place:"北直隶顺天府固安县", lat:39.44, lng:116.30},
+  {year:1523, name:"姚涞",   province:"浙江", place:"浙江宁波府慈溪县",  lat:30.18, lng:121.26},
+  {year:1526, name:"龚用卿", province:"福建", place:"福建福州府怀安县",  lat:26.07, lng:119.30},
+  {year:1529, name:"罗洪先", province:"江西", place:"江西吉安府吉水县",  lat:27.21, lng:115.13},
+  {year:1532, name:"林大钦", province:"广东", place:"广东潮州府海阳县",  lat:23.66, lng:116.62},
+  {year:1535, name:"韩应龙", province:"浙江", place:"浙江绍兴府余姚县",  lat:30.03, lng:121.15},
+  {year:1538, name:"茅瓒",   province:"浙江", place:"浙江杭州府钱塘县",  lat:30.25, lng:120.16},
+  {year:1541, name:"沈坤",   province:"南直隶", place:"南直隶淮安府大河卫", lat:33.55, lng:119.02},
+  {year:1544, name:"秦鸣雷", province:"浙江", place:"浙江台州府临海县",  lat:28.86, lng:121.15},
+  {year:1547, name:"李春芳", province:"南直隶", place:"南直隶扬州府兴化县", lat:32.95, lng:119.85},
+  {year:1550, name:"唐汝楫", province:"浙江", place:"浙江金华府兰溪县",  lat:29.21, lng:119.46},
+  {year:1553, name:"陈谨",   province:"福建", place:"福建福州府闽县",    lat:26.07, lng:119.30},
+  {year:1556, name:"诸大绶", province:"浙江", place:"浙江绍兴府山阴县",  lat:30.00, lng:120.58},
+  {year:1559, name:"丁士美", province:"南直隶", place:"南直隶淮安府清河县", lat:33.60, lng:119.17},
+  {year:1562, name:"申时行", province:"南直隶", place:"南直隶苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1565, name:"范应期", province:"浙江", place:"浙江湖州府乌程县",  lat:30.87, lng:120.09},
+  {year:1568, name:"罗万化", province:"浙江", place:"浙江绍兴府会稽县",  lat:30.00, lng:120.58},
+  {year:1571, name:"张元忭", province:"浙江", place:"浙江绍兴府山阴县",  lat:30.00, lng:120.58},
+  {year:1574, name:"孙继皋", province:"南直隶", place:"南直隶常州府无锡县", lat:31.57, lng:120.30},
+  {year:1577, name:"沈懋学", province:"南直隶", place:"南直隶宁国府宣城县", lat:30.95, lng:118.76},
+  {year:1580, name:"张懋修", province:"湖广", place:"湖广荆州府江陵县",  lat:30.35, lng:112.18},
+  {year:1583, name:"朱国祚", province:"浙江", place:"浙江嘉兴府秀水县",  lat:30.74, lng:120.75},
+  {year:1586, name:"唐文献", province:"南直隶", place:"南直隶松江府华亭县", lat:31.02, lng:121.10},
+  {year:1589, name:"焦竑",   province:"南直隶", place:"南直隶应天府江宁县", lat:32.05, lng:118.78},
+  {year:1592, name:"翁正春", province:"福建", place:"福建福州府侯官县",  lat:26.07, lng:119.30},
+  {year:1595, name:"朱之蕃", province:"南直隶", place:"南直隶应天府江宁县", lat:32.05, lng:118.78},
+  {year:1598, name:"赵秉忠", province:"山东", place:"山东青州府益都县",  lat:36.70, lng:118.48},
+  {year:1601, name:"张以诚", province:"南直隶", place:"南直隶松江府青浦县", lat:31.15, lng:121.12},
+  {year:1604, name:"杨守勤", province:"浙江", place:"浙江宁波府慈溪县",  lat:30.18, lng:121.26},
+  {year:1607, name:"黄士俊", province:"广东", place:"广东广州府顺德县",  lat:22.80, lng:113.24},
+  {year:1610, name:"韩敬",   province:"浙江", place:"浙江湖州府归安县",  lat:30.87, lng:120.09},
+  {year:1613, name:"周延儒", province:"南直隶", place:"南直隶常州府宜兴县", lat:31.35, lng:119.82},
+  {year:1616, name:"钱士升", province:"浙江", place:"浙江嘉兴府嘉善县",  lat:30.84, lng:120.92},
+  {year:1619, name:"庄际昌", province:"福建", place:"福建泉州府永春县",  lat:25.32, lng:118.30},
+  {year:1622, name:"文震孟", province:"南直隶", place:"南直隶苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1625, name:"余煌",   province:"浙江", place:"浙江绍兴府会稽县",  lat:30.00, lng:120.58},
+  {year:1628, name:"刘若宰", province:"南直隶", place:"南直隶安庆府怀宁县", lat:30.63, lng:117.04},
+  {year:1631, name:"陈于泰", province:"南直隶", place:"南直隶常州府宜兴县", lat:31.35, lng:119.82},
+  {year:1634, name:"刘理顺", province:"河南", place:"河南开封府杞县",    lat:34.55, lng:114.78},
+  {year:1637, name:"刘同升", province:"江西", place:"江西吉安府吉水县",  lat:27.21, lng:115.13},
+  {year:1640, name:"魏藻德", province:"北直隶", place:"北直隶顺天府通州", lat:39.91, lng:116.66},
+  {year:1643, name:"杨廷鉴", province:"南直隶", place:"南直隶常州府武进县", lat:31.77, lng:119.97},
+];
+
+// ============================================================
+// Data: Qing Dynasty Zhuangyuan (114 entries — Han bannermen only on map)
+// ============================================================
+const qingData = [
+  {year:1646, name:"傅以渐", province:"山东",  place:"山东东昌府聊城县", lat:36.46, lng:115.99},
+  {year:1647, name:"吕宫",   province:"江苏",  place:"江苏常州府武进县", lat:31.77, lng:119.97},
+  {year:1649, name:"刘子壮", province:"湖北",  place:"湖北黄州府黄冈县", lat:30.45, lng:114.87},
+  {year:1652, name:"麻勒吉", province:"满洲",  place:"满洲正黄旗",       lat:41.80, lng:123.43},
+  {year:1652, name:"邹忠倚", province:"江苏",  place:"江苏常州府无锡县", lat:31.57, lng:120.30},
+  {year:1655, name:"图尔宸", province:"满洲",  place:"满洲正白旗",       lat:41.80, lng:123.43},
+  {year:1655, name:"史大成", province:"浙江",  place:"浙江宁波府鄞县",   lat:29.86, lng:121.55},
+  {year:1658, name:"孙承恩", province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1659, name:"徐元文", province:"江苏",  place:"江苏苏州府昆山县", lat:31.38, lng:120.98},
+  {year:1661, name:"马世俊", province:"江苏",  place:"江苏镇江府溧阳县", lat:31.43, lng:119.48},
+  {year:1664, name:"严我斯", province:"浙江",  place:"浙江湖州府归安县", lat:30.87, lng:120.09},
+  {year:1667, name:"缪彤",   province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1670, name:"蔡启僔", province:"浙江",  place:"浙江湖州府德清县", lat:30.53, lng:119.97},
+  {year:1673, name:"韩菼",   province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1676, name:"彭定求", province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1679, name:"归允肃", province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1682, name:"蔡升元", province:"浙江",  place:"浙江湖州府德清县", lat:30.53, lng:119.97},
+  {year:1685, name:"陆肯堂", province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1688, name:"沈廷文", province:"浙江",  place:"浙江嘉兴府秀水县", lat:30.74, lng:120.75},
+  {year:1691, name:"戴有祺", province:"江苏",  place:"江苏松江府金山卫", lat:30.74, lng:121.36},
+  {year:1694, name:"胡任舆", province:"江苏",  place:"江苏江宁府上元县", lat:32.05, lng:118.78},
+  {year:1697, name:"李蟠",   province:"江苏",  place:"江苏徐州直隶州",   lat:34.26, lng:117.19},
+  {year:1700, name:"汪绎",   province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1703, name:"王式丹", province:"江苏",  place:"江苏扬州府宝应县", lat:33.24, lng:119.36},
+  {year:1706, name:"王云锦", province:"江苏",  place:"江苏常州府无锡县", lat:31.57, lng:120.30},
+  {year:1709, name:"赵熊诏", province:"江苏",  place:"江苏常州府武进县", lat:31.77, lng:119.97},
+  {year:1712, name:"王世琛", province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1713, name:"王敬铭", province:"江苏",  place:"江苏苏州府嘉定县", lat:31.38, lng:121.24},
+  {year:1715, name:"徐陶璋", province:"江苏",  place:"江苏苏州府昆山县", lat:31.38, lng:120.98},
+  {year:1718, name:"汪应铨", province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1721, name:"邓中岳", province:"山东",  place:"山东东昌府东昌卫", lat:36.46, lng:115.99},
+  {year:1723, name:"于振",   province:"江苏",  place:"江苏镇江府金坛县", lat:31.75, lng:119.60},
+  {year:1724, name:"陈德华", province:"直隶",  place:"直隶保定府安州",   lat:38.85, lng:115.68},
+  {year:1727, name:"彭启丰", province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1730, name:"周澍",   province:"浙江",  place:"浙江杭州府钱塘县", lat:30.25, lng:120.16},
+  {year:1733, name:"陈倓",   province:"江苏",  place:"江苏扬州府仪征县", lat:32.27, lng:119.18},
+  {year:1736, name:"金德瑛", province:"浙江",  place:"浙江杭州府仁和县", lat:30.25, lng:120.16},
+  {year:1737, name:"于敏中", province:"江苏",  place:"江苏镇江府金坛县", lat:31.75, lng:119.60},
+  {year:1739, name:"庄有恭", province:"广东",  place:"广东广州府番禺县", lat:23.13, lng:113.26},
+  {year:1742, name:"金甡",   province:"浙江",  place:"浙江杭州府仁和县", lat:30.25, lng:120.16},
+  {year:1745, name:"钱维城", province:"江苏",  place:"江苏常州府武进县", lat:31.77, lng:119.97},
+  {year:1748, name:"梁国治", province:"浙江",  place:"浙江绍兴府会稽县", lat:30.00, lng:120.58},
+  {year:1751, name:"吴鸿",   province:"浙江",  place:"浙江杭州府仁和县", lat:30.25, lng:120.16},
+  {year:1752, name:"秦大士", province:"江苏",  place:"江苏江宁府江宁县", lat:32.05, lng:118.78},
+  {year:1754, name:"庄培因", province:"江苏",  place:"江苏常州府阳湖县", lat:31.77, lng:119.97},
+  {year:1757, name:"蔡以台", province:"浙江",  place:"浙江嘉兴府嘉善县", lat:30.84, lng:120.92},
+  {year:1760, name:"毕沅",   province:"江苏",  place:"江苏太仓直隶州镇洋县", lat:31.45, lng:121.10},
+  {year:1761, name:"王杰",   province:"陕西",  place:"陕西同州府韩城县", lat:35.48, lng:110.45},
+  {year:1763, name:"秦大成", province:"江苏",  place:"江苏太仓直隶州嘉定县", lat:31.38, lng:121.24},
+  {year:1766, name:"张书勋", province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1769, name:"陈初哲", province:"江苏",  place:"江苏苏州府元和县", lat:31.30, lng:120.62},
+  {year:1771, name:"黄轩",   province:"安徽",  place:"安徽徽州府休宁县", lat:29.79, lng:118.19},
+  {year:1772, name:"金榜",   province:"安徽",  place:"安徽徽州府歙县",   lat:29.87, lng:118.43},
+  {year:1775, name:"吴锡龄", province:"安徽",  place:"安徽徽州府休宁县", lat:29.79, lng:118.19},
+  {year:1778, name:"戴衢亨", province:"江西",  place:"江西南安府大庾县", lat:25.40, lng:114.35},
+  {year:1780, name:"汪如洋", province:"浙江",  place:"浙江嘉兴府秀水县", lat:30.74, lng:120.75},
+  {year:1781, name:"钱棨",   province:"江苏",  place:"江苏苏州府长洲县", lat:31.30, lng:120.62},
+  {year:1784, name:"茹棻",   province:"浙江",  place:"浙江绍兴府会稽县", lat:30.00, lng:120.58},
+  {year:1787, name:"史致光", province:"浙江",  place:"浙江绍兴府山阴县", lat:30.00, lng:120.58},
+  {year:1789, name:"胡长龄", province:"江苏",  place:"江苏通州直隶州",   lat:32.05, lng:120.88},
+  {year:1790, name:"石韫玉", province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1793, name:"潘世恩", province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1795, name:"王以衔", province:"浙江",  place:"浙江湖州府归安县", lat:30.87, lng:120.09},
+  {year:1796, name:"赵文楷", province:"安徽",  place:"安徽安庆府太湖县", lat:30.45, lng:116.30},
+  {year:1799, name:"姚文田", province:"浙江",  place:"浙江湖州府归安县", lat:30.87, lng:120.09},
+  {year:1801, name:"顾皋",   province:"江苏",  place:"江苏常州府金匮县", lat:31.57, lng:120.30},
+  {year:1802, name:"吴廷琛", province:"江苏",  place:"江苏苏州府元和县", lat:31.30, lng:120.62},
+  {year:1805, name:"彭浚",   province:"湖南",  place:"湖南衡州府衡山县", lat:27.23, lng:112.87},
+  {year:1808, name:"吴信中", province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1809, name:"洪莹",   province:"安徽",  place:"安徽徽州府歙县",   lat:29.87, lng:118.43},
+  {year:1811, name:"蒋立镛", province:"湖北",  place:"湖北安陆府天门县", lat:30.66, lng:113.17},
+  {year:1814, name:"龙汝言", province:"安徽",  place:"安徽安庆府桐城县", lat:30.65, lng:116.97},
+  {year:1817, name:"吴其濬", province:"河南",  place:"河南光州直隶州固始县", lat:31.92, lng:115.65},
+  {year:1819, name:"陈沆",   province:"湖北",  place:"湖北黄州府蕲水县", lat:30.45, lng:115.30},
+  {year:1820, name:"陈继昌", province:"广西",  place:"广西桂林府临桂县", lat:25.23, lng:110.18},
+  {year:1822, name:"戴兰芬", province:"安徽",  place:"安徽泗州直隶州天长县", lat:32.68, lng:119.00},
+  {year:1823, name:"林召棠", province:"广东",  place:"广东高州府吴川县", lat:21.45, lng:110.78},
+  {year:1826, name:"朱昌颐", province:"浙江",  place:"浙江嘉兴府海盐县", lat:30.53, lng:120.95},
+  {year:1829, name:"李振钧", province:"安徽",  place:"安徽安庆府太湖县", lat:30.45, lng:116.30},
+  {year:1832, name:"吴锺骏", province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1833, name:"汪鸣相", province:"江西",  place:"江西九江府彭泽县", lat:29.88, lng:116.56},
+  {year:1835, name:"刘绎",   province:"江西",  place:"江西吉安府永丰县", lat:27.33, lng:115.42},
+  {year:1836, name:"林鸿年", province:"福建",  place:"福建福州府侯官县", lat:26.07, lng:119.30},
+  {year:1838, name:"钮福保", province:"浙江",  place:"浙江湖州府乌程县", lat:30.87, lng:120.09},
+  {year:1840, name:"李承霖", province:"江苏",  place:"江苏镇江府丹徒县", lat:32.20, lng:119.45},
+  {year:1841, name:"龙启瑞", province:"广西",  place:"广西桂林府临桂县", lat:25.23, lng:110.18},
+  {year:1844, name:"孙毓溎", province:"山东",  place:"山东济宁直隶州",   lat:35.41, lng:116.59},
+  {year:1845, name:"萧锦忠", province:"湖南",  place:"湖南长沙府茶陵州", lat:26.79, lng:113.53},
+  {year:1847, name:"张之万", province:"直隶",  place:"直隶天津府南皮县", lat:38.03, lng:116.71},
+  {year:1850, name:"陆增祥", province:"江苏",  place:"江苏太仓直隶州",   lat:31.45, lng:121.10},
+  {year:1852, name:"章鋆",   province:"浙江",  place:"浙江宁波府鄞县",   lat:29.86, lng:121.55},
+  {year:1853, name:"孙如仅", province:"山东",  place:"山东济宁直隶州",   lat:35.41, lng:116.59},
+  {year:1856, name:"翁同龢", province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1859, name:"孙家鼐", province:"安徽",  place:"安徽凤阳府寿州",   lat:32.56, lng:116.78},
+  {year:1860, name:"钟骏声", province:"浙江",  place:"浙江杭州府仁和县", lat:30.25, lng:120.16},
+  {year:1862, name:"徐郙",   province:"江苏",  place:"江苏太仓直隶州嘉定县", lat:31.38, lng:121.24},
+  {year:1863, name:"翁曾源", province:"江苏",  place:"江苏苏州府常熟县", lat:31.65, lng:120.75},
+  {year:1865, name:"崇绮",   province:"蒙古",  place:"蒙古正蓝旗",       lat:43.65, lng:111.43},
+  {year:1868, name:"洪钧",   province:"江苏",  place:"江苏苏州府吴县",   lat:31.30, lng:120.62},
+  {year:1871, name:"梁耀枢", province:"广东",  place:"广东广州府顺德县", lat:22.80, lng:113.24},
+  {year:1874, name:"陆润庠", province:"江苏",  place:"江苏苏州府元和县", lat:31.30, lng:120.62},
+  {year:1876, name:"曹鸿勋", province:"山东",  place:"山东莱州府潍县",   lat:36.71, lng:119.10},
+  {year:1877, name:"王仁堪", province:"福建",  place:"福建福州府闽县",   lat:26.07, lng:119.30},
+  {year:1880, name:"黄思永", province:"江苏",  place:"江苏江宁府江宁县", lat:32.05, lng:118.78},
+  {year:1883, name:"陈冕",   province:"直隶",  place:"直隶顺天府宛平县", lat:39.91, lng:116.39},
+  {year:1886, name:"赵以烱", province:"贵州",  place:"贵州贵阳府贵筑县", lat:26.58, lng:106.72},
+  {year:1889, name:"张建勋", province:"广西",  place:"广西桂林府临桂县", lat:25.23, lng:110.18},
+  {year:1890, name:"吴鲁",   province:"福建",  place:"福建泉州府晋江县", lat:24.91, lng:118.58},
+  {year:1892, name:"刘福姚", province:"广西",  place:"广西桂林府临桂县", lat:25.23, lng:110.18},
+  {year:1894, name:"张謇",   province:"江苏",  place:"江苏通州直隶州",   lat:31.98, lng:121.05},
+  {year:1895, name:"骆成骧", province:"四川",  place:"四川资州直隶州",   lat:29.99, lng:104.64},
+  {year:1898, name:"夏同龢", province:"贵州",  place:"贵州都匀府麻哈州", lat:26.26, lng:107.52},
+  {year:1903, name:"王寿彭", province:"山东",  place:"山东莱州府潍县",   lat:36.71, lng:119.10},
+  {year:1904, name:"刘春霖", province:"直隶",  place:"直隶河间府肃宁县", lat:38.42, lng:115.83},
+];
+
+// ============================================================
+// Build map
+// ============================================================
+const map = L.map('map', {
+  center: [33, 112],
+  zoom: 5,
+  zoomControl: true,
+  minZoom: 4, maxZoom: 10
+});
+
+// Amap (GCJ-02) tile — subdomains 1-4
+L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+  attribution: '© <a href="https://www.amap.com/" target="_blank">高德地图</a>',
+  subdomains: ['1','2','3','4'],
+  maxZoom: 18
+}).addTo(map);
+
+// WGS-84 → GCJ-02 conversion (Mars coordinate system)
+function wgs2gcj(lat, lng) {
+  const a = 6378245.0, ee = 0.00669342162296594323;
+  function outOfChina(lat, lng) {
+    return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+  }
+  function transformLat(x, y) {
+    let ret = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+    ret += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
+    ret += (20*Math.sin(y*Math.PI) + 40*Math.sin(y/3*Math.PI)) * 2/3;
+    ret += (160*Math.sin(y/12*Math.PI) + 320*Math.sin(y*Math.PI/30)) * 2/3;
+    return ret;
+  }
+  function transformLng(x, y) {
+    let ret = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+    ret += (20*Math.sin(6*x*Math.PI) + 20*Math.sin(2*x*Math.PI)) * 2/3;
+    ret += (20*Math.sin(x*Math.PI) + 40*Math.sin(x/3*Math.PI)) * 2/3;
+    ret += (150*Math.sin(x/12*Math.PI) + 300*Math.sin(x/30*Math.PI)) * 2/3;
+    return ret;
+  }
+  if (outOfChina(lat, lng)) return [lat, lng];
+  let dLat = transformLat(lng - 105, lat - 35);
+  let dLng = transformLng(lng - 105, lat - 35);
+  const radLat = lat / 180 * Math.PI;
+  let magic = Math.sin(radLat);
+  magic = 1 - ee * magic * magic;
+  const sqrtMagic = Math.sqrt(magic);
+  dLat = (dLat * 180) / ((a * (1-ee)) / (magic * sqrtMagic) * Math.PI);
+  dLng = (dLng * 180) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+  return [lat + dLat, lng + dLng];
+}
+
+// Group nearby points into clusters by key
+function clusterKey(lat, lng) {
+  return Math.round(lat * 20) + '_' + Math.round(lng * 20);
+}
+
+let currentFilter = 'all';
+let markerGroup = L.layerGroup().addTo(map);
+
+function getColor(dynasties) {
+  if (dynasties.ming && dynasties.qing) return '#9b59b6';
+  if (dynasties.ming) return '#e74c3c';
+  return '#3498db';
+}
+
+function buildMarkers(filter){
+  markerGroup.clearLayers();
+  const clusters = {};
+
+  const allData = [
+    ...mingData.map(d => ({...d, dynasty: 'ming'})),
+    ...qingData.map(d => ({...d, dynasty: 'qing'}))
+  ];
+
+  let mingCount = 0, qingCount = 0;
+
+  allData.forEach(d => {
+    if (filter !== 'all' && d.dynasty !== filter) return;
+    if (d.dynasty === 'ming') mingCount++;
+    else qingCount++;
+
+    const [glat, glng] = wgs2gcj(d.lat, d.lng);
+    const key = clusterKey(glat, glng);
+    if (!clusters[key]) clusters[key] = {lat: glat, lng: glng, items: [], dynasties: {}};
+    clusters[key].items.push(d);
+    clusters[key].dynasties[d.dynasty] = true;
+  });
+
+  document.getElementById('ming-count').textContent = filter === 'qing' ? 0 : mingCount;
+  document.getElementById('qing-count').textContent = filter === 'ming' ? 0 : qingCount;
+  document.getElementById('total-count').textContent = mingCount + qingCount;
+
+  Object.values(clusters).forEach(cluster => {
+    const count = cluster.items.length;
+    const color = getColor(cluster.dynasties);
+    const radius = Math.min(6 + count * 2.5, 28);
+
+    const marker = L.circleMarker([cluster.lat, cluster.lng], {
+      radius: radius,
+      fillColor: color,
+      color: '#fff',
+      weight: 1.5,
+      opacity: 0.9,
+      fillOpacity: 0.82
+    });
+
+    // Build title: normalize to "府+county", drop province prefix.
+    // All prefecture names in this dataset are exactly 2 chars (苏州、宁波、顺天…)
+    // so slice from (indexOf('府') - 2): "南直隶苏州府吴县" -> "苏州府吴县"
+    //                                    "江苏苏州府吴县"   -> "苏州府吴县"  (same, deduped)
+    //                                    "满洲正黄旗"       -> "满洲正黄旗"  (no 府, kept)
+    const normPlace = s => {
+      const fi = s.indexOf('府');
+      if (fi < 0) return s;
+      return s.slice(Math.max(0, fi - 2));
+    };
+    const normed = [...new Set(cluster.items.map(d => normPlace(d.place)))];
+
+    let titleText;
+    if (normed.length === 1) {
+      titleText = normed[0];
+    } else {
+      const prefMatch = normed[0].match(/^(.+?府)/);
+      const pref = prefMatch ? prefMatch[1] : null;
+      if (pref && normed.every(s => s.startsWith(pref))) {
+        // Same prefecture: "苏州府吴县 / 长洲县 / 元和县"
+        const counties = [...new Set(normed.map(s => s.slice(pref.length)))].filter(Boolean);
+        titleText = pref + counties.join(' / ');
+      } else {
+        titleText = normed.join(' / ');
+      }
+    }
+    let popupHtml = '<div class="popup-title">' + titleText + ' · ' + count + '位状元</div>';
+
+    // Sort by year
+    cluster.items.sort((a, b) => a.year - b.year);
+
+    // Dynasty badges
+    const hasMing = cluster.dynasties.ming;
+    const hasQing = cluster.dynasties.qing;
+    if (hasMing) popupHtml += '<span class="popup-dynasty popup-ming">明朝</span> ';
+    if (hasQing) popupHtml += '<span class="popup-dynasty popup-qing">清朝</span>';
+    popupHtml += '<div class="popup-list">';
+
+    cluster.items.forEach(item => {
+      const dClass = item.dynasty === 'ming' ? 'popup-ming' : 'popup-qing';
+      popupHtml += `<div class="popup-item">
+        <span class="popup-dynasty ${dClass}" style="padding:1px 5px;font-size:11px">${item.dynasty==='ming'?'明':'清'}</span>
+        <span class="popup-year">${item.year}年</span>
+        <span class="popup-name">${item.name}</span>
+        <span class="popup-from">${item.place}</span>
+      </div>`;
+    });
+    popupHtml += '</div>';
+
+    marker.bindPopup(popupHtml, {maxWidth: 320, minWidth: 240});
+
+    // Count label for large clusters
+    if (count > 1) {
+      const icon = L.divIcon({
+        html: `<div style="width:${radius*2}px;height:${radius*2}px;border-radius:50%;background:${color};color:#fff;font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4)">${count}</div>`,
+        iconSize: [radius*2, radius*2],
+        iconAnchor: [radius, radius],
+        className: ''
+      });
+      const labelMarker = L.marker([cluster.lat, cluster.lng], {icon});
+      labelMarker.bindPopup(popupHtml, {maxWidth: 320, minWidth: 240});
+      markerGroup.addLayer(labelMarker);
+    } else {
+      markerGroup.addLayer(marker);
+    }
+  });
+}
+
+function filterDynasty(dynasty) {
+  currentFilter = dynasty;
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.btn-' + (dynasty === 'all' ? 'all' : dynasty)).classList.add('active');
+  buildMarkers(dynasty);
+}
+
+buildMarkers('all');
+
+// Legend
+const legend = L.control({position: 'bottomright'});
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = `<h4>图例</h4>
+    <div class="legend-item"><span class="legend-dot dot-ming"></span>明朝状元</div>
+    <div class="legend-item"><span class="legend-dot dot-qing"></span>清朝状元</div>
+    <div class="legend-item"><span class="legend-dot dot-both"></span>两朝均有</div>
+    <div style="margin-top:8px;color:#888;font-size:11px">圆圈大小反映人数</div>`;
+  return div;
+};
+legend.addTo(map);
+</script>
+</body>
+</html>

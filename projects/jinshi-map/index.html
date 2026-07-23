@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明清进士籍贯分布地图</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft YaHei', SimSun, sans-serif; background: #1a1a2e; color: #eee; }
+  #header {
+    background: linear-gradient(135deg, #16213e, #0f3460);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    z-index: 1000; position: relative;
+  }
+  #header h1 { font-size: 22px; color: #e2b96f; letter-spacing: 2px; }
+  #header p { font-size: 13px; color: #aaa; margin-top: 3px; }
+  #controls {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 7px 16px; border-radius: 20px; border: none; cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all 0.2s;
+    font-weight: bold; letter-spacing: 1px;
+  }
+  .btn-all  { background: #e2b96f; color: #1a1a2e; }
+  .btn-ming { background: #c0392b; color: #fff; }
+  .btn-qing { background: #2980b9; color: #fff; }
+  .btn.active, .btn:hover { transform: scale(1.07); box-shadow: 0 0 10px rgba(226,185,111,0.4); }
+  #stats {
+    display: flex; gap: 18px; font-size: 13px; color: #aaa;
+  }
+  .stat-item span { font-size: 18px; font-weight: bold; }
+  .stat-ming { color: #e74c3c; }
+  .stat-qing { color: #3498db; }
+  #map { width: 100%; height: calc(100vh - 130px); }
+  .leaflet-popup-content-wrapper {
+    background: #16213e; border: 1px solid #e2b96f;
+    border-radius: 8px; color: #eee;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .leaflet-popup-tip { background: #16213e; }
+  .popup-title {
+    font-size: 15px; font-weight: bold; color: #e2b96f;
+    border-bottom: 1px solid #2d4a7a; padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .popup-list { max-height: 300px; overflow-y: auto; }
+  .popup-item {
+    padding: 4px 0; border-bottom: 1px solid #2d4a7a; font-size: 13px;
+    display: flex; gap: 8px; align-items: baseline;
+  }
+  .popup-item:last-child { border-bottom: none; }
+  .popup-year { color: #aaa; font-size: 12px; white-space: nowrap; }
+  .popup-name { color: #f0e0b0; }
+  .popup-from { color: #80a8d0; font-size: 11px; }
+  .zoom-hint {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    background: rgba(22,33,62,0.92); border: 1px solid #2d4a7a;
+    border-radius: 20px; padding: 8px 20px; z-index: 1000;
+    font-size: 13px; color: #e2b96f; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #footer {
+    background: #0f1923; color: #555; font-size: 11px;
+    text-align: center; padding: 6px; height: 26px;
+  }
+  .popup-list::-webkit-scrollbar { width: 4px; }
+  .popup-list::-webkit-scrollbar-track { background: #16213e; }
+  .popup-list::-webkit-scrollbar-thumb { background: #2d4a7a; border-radius: 2px; }
+  .bubble-label {
+    background: none; border: none; box-shadow: none;
+    font-size: 11px; color: #fff; text-align: center;
+    white-space: nowrap; font-weight: bold;
+    text-shadow: 0 0 4px #000, 0 0 2px #000;
+  }
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,46,0.9); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #e2b96f;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <div>
+    <h1>明清进士籍贯分布地图</h1>
+    <p>Ming & Qing Dynasty Jinshi Distribution (53,000+) — Multi-level Drill-down</p>
+  </div>
+  <div id="controls">
+    <button class="btn btn-all active" onclick="filterDynasty('all')">全部</button>
+    <button class="btn btn-ming" onclick="filterDynasty('ming')">明朝</button>
+    <button class="btn btn-qing" onclick="filterDynasty('qing')">清朝</button>
+  </div>
+  <div id="stats">
+    <div class="stat-item">总计：<span id="total-count" style="color:#e2b96f">—</span></div>
+    <div class="stat-item">明朝：<span class="stat-ming" id="ming-count">—</span></div>
+    <div class="stat-item">清朝：<span class="stat-qing" id="qing-count">—</span></div>
+  </div>
+</div>
+<div id="map"></div>
+<div id="footer">数据来源：CBDB 中国历代人物传记资料库（哈佛大学/北京大学/台湾中研院） · 地图底图：高德地图</div>
+<div id="loading" class="loading-overlay">加载数据中...</div>
+
+<script>
+// ===== GCJ-02 Coordinate Transform =====
+const PI = Math.PI, a = 6378245.0, ee = 0.00669342162296594323;
+function transformLat(x,y){let r=-100+2*x+3*y+.2*y*y+.1*x*y+.2*Math.sqrt(Math.abs(x));r+=2*(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))/3;r+=2*(20*Math.sin(y*PI)+40*Math.sin(y/3*PI))/3;r+=2*(160*Math.sin(y/12*PI)+320*Math.sin(y*PI/30))/3;return r}
+function transformLng(x,y){let r=300+x+2*y+.1*x*x+.1*x*y+.1*Math.sqrt(Math.abs(x));r+=2*(20*Math.sin(6*x*PI)+20*Math.sin(2*x*PI))/3;r+=2*(20*Math.sin(x*PI)+40*Math.sin(x/3*PI))/3;r+=2*(150*Math.sin(x/12*PI)+300*Math.sin(x/30*PI))/3;return r}
+function wgs84ToGcj02(lat,lng){let dLat=transformLat(lng-105,lat-35),dLng=transformLng(lng-105,lat-35);let rLat=lat/180*PI,magic=Math.sin(rLat);magic=1-ee*magic*magic;let sqM=Math.sqrt(magic);dLat=(dLat*180)/(a*(1-ee)/(magic*sqM)*PI);dLng=(dLng*180)/(a/sqM*Math.cos(rLat)*PI);return[lat+dLat,lng+dLng]}
+
+// ===== Map Init =====
+const map = L.map('map',{center:[34.5,108],zoom:5,zoomControl:true,attributionControl:false});
+L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{subdomains:'1234',maxZoom:18}).addTo(map);
+
+// ===== State =====
+let provinceData = [];
+let currentDynasty = 'all'; // 'all','ming','qing'
+let currentLayer = null;
+let zoomHintEl = null;
+let prefectureCache = {}; // cache loaded prefecture data
+let renderId = 0; // track render generation to cancel stale async renders
+
+// ===== Load Province Data =====
+async function loadProvinceData() {
+  const resp = await fetch('data/province_summary.json');
+  provinceData = await resp.json();
+  updateStats();
+  renderCurrentLevel();
+  document.getElementById('loading').style.display = 'none';
+}
+
+function updateStats() {
+  let total = 0, ming = 0, qing = 0;
+  provinceData.forEach(p => {
+    total += p.count; ming += p.ming_count; qing += p.qing_count;
+  });
+  document.getElementById('total-count').textContent = total.toLocaleString();
+  document.getElementById('ming-count').textContent = ming.toLocaleString();
+  document.getElementById('qing-count').textContent = qing.toLocaleString();
+}
+
+// ===== Bubble Size Calculation =====
+function bubbleRadius(count, maxCount, minR, maxR) {
+  if (maxCount <= 0) return minR;
+  return minR + (maxR - minR) * Math.pow(count / maxCount, 0.35);
+}
+
+// ===== Render Province Level (zoom <= 6) =====
+function renderProvinceLevel() {
+  if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null; }
+  const group = L.layerGroup();
+  const filtered = provinceData.filter(p => p.lat && p.lng);
+  const maxCount = Math.max(...filtered.map(p => {
+    if (currentDynasty === 'ming') return p.ming_count;
+    if (currentDynasty === 'qing') return p.qing_count;
+    return p.count;
+  }));
+
+  filtered.forEach(p => {
+    const count = currentDynasty === 'ming' ? p.ming_count :
+                  currentDynasty === 'qing' ? p.qing_count : p.count;
+    if (count === 0) return;
+    const r = bubbleRadius(count, maxCount, 10, 60);
+    const [lat, lng] = wgs84ToGcj02(p.lat, p.lng);
+    const color = currentDynasty === 'ming' ? '#e74c3c' :
+                  currentDynasty === 'qing' ? '#3498db' : '#e2b96f';
+
+    const circle = L.circleMarker([lat, lng], {
+      radius: r, fillColor: color, fillOpacity: 0.6,
+      color: color, weight: 1.5, opacity: 0.8
+    });
+    circle.bindPopup(`<div class="popup-title">${p.name}</div>
+      <div>进士总数：<b style="color:#e2b96f">${p.count}</b></div>
+      <div style="margin-top:4px">明朝：<span style="color:#e74c3c">${p.ming_count}</span> | 清朝：<span style="color:#3498db">${p.qing_count}</span></div>
+      <div style="margin-top:8px;color:#aaa;font-size:11px">放大地图查看府级分布 →</div>`, {maxWidth: 250});
+
+    // Label
+    const label = L.marker([lat, lng], {
+      interactive: false,
+      icon: L.divIcon({
+        className: 'bubble-label',
+        html: `${p.name}<br>${count}`,
+        iconSize: [60, 30], iconAnchor: [30, 15]
+      })
+    });
+    group.addLayer(circle);
+    group.addLayer(label);
+  });
+
+  currentLayer = group;
+  group.addTo(map);
+}
+
+// ===== Load Prefecture Data =====
+async function loadPrefectureData(provId, dynasty) {
+  const key = `${dynasty}_${provId}`;
+  if (prefectureCache[key]) return prefectureCache[key];
+  try {
+    const resp = await fetch(`data/${dynasty}/province_${provId}.json`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    prefectureCache[key] = data;
+    return data;
+  } catch(e) { return null; }
+}
+
+// ===== Render Prefecture Level (zoom 7-9) =====
+async function renderPrefectureLevel() {
+  const myRenderId = renderId;
+  if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null; }
+  const group = L.layerGroup();
+  const bounds = map.getBounds();
+  const center = bounds.getCenter();
+
+  // Find visible provinces
+  const visibleProvs = provinceData.filter(p => {
+    if (!p.lat || !p.lng) return false;
+    const [lat, lng] = wgs84ToGcj02(p.lat, p.lng);
+    return Math.abs(lat - center.lat) < 10 && Math.abs(lng - center.lng) < 10;
+  });
+
+  const dynasties = currentDynasty === 'all' ? ['ming', 'qing'] : [currentDynasty];
+  let allPrefs = [];
+
+  for (const prov of visibleProvs) {
+    for (const dy of dynasties) {
+      if ((dy === 'ming' ? prov.ming_count : prov.qing_count) === 0) continue;
+      const data = await loadPrefectureData(prov.id, dy);
+      if (myRenderId !== renderId) return; // stale render, abort
+      if (data) {
+        data.forEach(pref => {
+          if (pref.lat && pref.lng && pref.count > 0) {
+            allPrefs.push({...pref, dynasty: dy, provName: prov.name});
+          }
+        });
+      }
+    }
+  }
+
+  // Merge prefectures at same location (same Fu may have different IDs across dynasties)
+  const merged = {};
+  allPrefs.forEach(pref => {
+    const key = `${pref.lat.toFixed(3)}_${pref.lng.toFixed(3)}`;
+    if (!merged[key]) {
+      merged[key] = {id: pref.id, name: pref.name, lat: pref.lat, lng: pref.lng,
+        count: 0, ming_count: 0, qing_count: 0, people: []};
+    }
+    merged[key].count += pref.count;
+    if (pref.dynasty === 'ming') merged[key].ming_count += pref.count;
+    else merged[key].qing_count += pref.count;
+    merged[key].people = merged[key].people.concat(pref.people || []);
+  });
+
+  const prefList = Object.values(merged).filter(p => {
+    const [lat, lng] = wgs84ToGcj02(p.lat, p.lng);
+    return Math.abs(lat - center.lat) < 5 && Math.abs(lng - center.lng) < 5;
+  });
+
+  if (myRenderId !== renderId) return; // stale render, abort
+
+  const maxCount = Math.max(1, ...prefList.map(p => p.count));
+
+  prefList.forEach(pref => {
+    const count = pref.count;
+    const r = bubbleRadius(count, maxCount, 6, 45);
+    const [lat, lng] = wgs84ToGcj02(pref.lat, pref.lng);
+    const color = currentDynasty === 'ming' ? '#e74c3c' :
+                  currentDynasty === 'qing' ? '#3498db' : '#9b59b6';
+
+    const circle = L.circleMarker([lat, lng], {
+      radius: r, fillColor: color, fillOpacity: 0.55,
+      color: color, weight: 1.5, opacity: 0.8
+    });
+
+    // Show top people in popup; show addr only if multiple distinct regions exist
+    const uniqueAddrs = new Set(pref.people.map(p => p.addr).filter(Boolean));
+    const showAddr = uniqueAddrs.size > 1;
+    const sortedPeople = pref.people.sort((a,b) => a.year - b.year);
+    const topPeople = sortedPeople.slice(0, 30);
+  let listHtml = topPeople.map(p =>
+      `<div class="popup-item"><span class="popup-year">${p.year}</span><span class="popup-name">${p.name}</span>${showAddr ? `<span class="popup-from">${p.addr||''}</span>` : ''}</div>`
+    ).join('');
+    if (pref.people.length > 30) listHtml += `<div style="color:#aaa;font-size:11px;padding:4px 0">... 等 ${pref.people.length} 人</div>`;
+
+    circle.bindPopup(`<div class="popup-title">${pref.name}</div>
+      <div>进士：<b style="color:#e2b96f">${count}</b></div>
+      <div class="popup-list">${listHtml}</div>`, {maxWidth: 320, maxHeight: 400});
+
+    const label = L.marker([lat, lng], {
+      interactive: false,
+      icon: L.divIcon({
+        className: 'bubble-label',
+        html: `${pref.name}<br>${count}`,
+        iconSize: [60, 24], iconAnchor: [30, 12]
+      })
+    });
+    group.addLayer(circle);
+    if (map.getZoom() >= 7) group.addLayer(label);
+  });
+
+  currentLayer = group;
+  group.addTo(map);
+}
+
+// ===== Render Person Level (zoom >= 10) =====
+async function renderPersonLevel() {
+  const myRenderId = renderId;
+  if (currentLayer) { map.removeLayer(currentLayer); currentLayer = null; }
+  const group = L.layerGroup();
+  const bounds = map.getBounds();
+
+  const center = bounds.getCenter();
+  const visibleProvs = provinceData.filter(p => {
+    if (!p.lat || !p.lng) return false;
+    const [lat, lng] = wgs84ToGcj02(p.lat, p.lng);
+    // Load a province if its center is within ~8 degrees of the viewport center (zoom-independent)
+    return Math.abs(lat - center.lat) < 8 && Math.abs(lng - center.lng) < 8;
+  });
+
+  const dynasties = currentDynasty === 'all' ? ['ming', 'qing'] : [currentDynasty];
+  let allPeople = [];
+
+  for (const prov of visibleProvs) {
+    for (const dy of dynasties) {
+      if ((dy === 'ming' ? prov.ming_count : prov.qing_count) === 0) continue;
+      const data = await loadPrefectureData(prov.id, dy);
+      if (myRenderId !== renderId) return; // stale render, abort
+      if (data) {
+        data.forEach(pref => {
+          (pref.people || []).forEach(person => {
+            if (person.lat && person.lng) {
+              const [lat, lng] = wgs84ToGcj02(person.lat, person.lng);
+              // Render a person if within ~4 degrees of the viewport center (zoom-independent, prevents rendering all 53k points)
+              if (Math.abs(lat - center.lat) < 4 && Math.abs(lng - center.lng) < 4) {
+                allPeople.push({...person, dynasty: dy, prefName: pref.name});
+              }
+            }
+          });
+        });
+      }
+    }
+  }
+
+  if (myRenderId !== renderId) return;
+
+  // Cluster by location (use toFixed(3) ~ 100m precision)
+  const clusters = {};
+  allPeople.forEach(p => {
+    const key = `${p.lat.toFixed(3)}_${p.lng.toFixed(3)}`;
+    if (!clusters[key]) clusters[key] = {lat: p.lat, lng: p.lng, people: [], addrs: new Set(), maxYear: 0};
+    clusters[key].people.push(p);
+    if (p.addr) clusters[key].addrs.add(p.addr);
+    if (p.year > clusters[key].maxYear) {
+      clusters[key].maxYear = p.year;
+      clusters[key].lat = p.lat;
+      clusters[key].lng = p.lng;
+    }
+  });
+
+  // Merge clusters with same name and distance < 10km (same county across dynasties)
+  const haversineKm = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+  let clusterArr = Object.values(clusters);
+  for (let i = 0; i < clusterArr.length; i++) {
+    if (!clusterArr[i]) continue;
+    for (let j = i + 1; j < clusterArr.length; j++) {
+      if (!clusterArr[j]) continue;
+      const ci = clusterArr[i], cj = clusterArr[j];
+      // Check if they share at least one addr name
+     const shared = [...ci.addrs].some(a => cj.addrs.has(a));
+      if (!shared) continue;
+      const dist = haversineKm(ci.lat, ci.lng, cj.lat, cj.lng);
+      if (dist >= 10) continue;
+      // Merge j into i; use coordinates from the one with newer maxYear
+      if (cj.maxYear > ci.maxYear) { ci.lat = cj.lat; ci.lng = cj.lng; ci.maxYear = cj.maxYear; }
+      ci.people = ci.people.concat(cj.people);
+      cj.addrs.forEach(a => ci.addrs.add(a));
+      clusterArr[j] = null;
+    }
+  }
+  clusterArr = clusterArr.filter(Boolean);
+
+  clusterArr.forEach(cluster => {
+    const [lat, lng] = wgs84ToGcj02(cluster.lat, cluster.lng);
+    const count = cluster.people.length;
+    const color = currentDynasty === 'ming' ? '#e74c3c' :
+                  currentDynasty === 'qing' ? '#3498db' : '#9b59b6';
+    const r = Math.max(6, Math.min(Math.pow(count, 0.8)*0.5, 200));
+
+    const circle = L.circleMarker([lat, lng], {
+      radius: r, fillColor: color, fillOpacity: 0.7,
+      color: '#fff', weight: 1, opacity: 0.6
+    });
+
+    const showAddr = cluster.addrs.size > 1;
+    const sortedPeople = cluster.people.sort((a,b) => a.year - b.year);
+    const topPeople = sortedPeople.slice(0, 50);
+    let listHtml = topPeople.map(p =>
+      `<div class="popup-item"><span class="popup-year">${p.year}</span><span class="popup-name">${p.name}</span>${showAddr ? `<span class="popup-from">${p.addr||''}</span>` : ''}</div>`
+    ).join('');
+    if (count > 50) listHtml += `<div style="color:#aaa;font-size:11px;padding:4px 0">... 等 ${count} 人</div>`;
+
+    // Use all unique addr names for the title (merges prefecture + county names)
+    const addrNames = [...cluster.addrs].join(' / ');
+    circle.bindPopup(`<div class="popup-title">${addrNames}（${count}人）</div>
+      <div class="popup-list">${listHtml}</div>`, {maxWidth: 300, maxHeight: 400});
+
+    const label = L.marker([lat, lng], {
+      interactive: false,
+      icon: L.divIcon({
+        className: 'bubble-label',
+        html: `${addrNames}<br>${count}`,
+        iconSize: [60, 24], iconAnchor: [30, 12]
+      })
+    });
+    group.addLayer(circle);
+    group.addLayer(label);
+  });
+
+  currentLayer = group;
+  group.addTo(map);
+}
+
+// ===== Level Management =====
+function getLevel() {
+  const z = map.getZoom();
+  if (z <= 6) return 'province';
+  if (z <= 9) return 'prefecture';
+  return 'person';
+}
+
+function renderCurrentLevel() {
+  renderId++; // invalidate any in-flight async renders
+  const level = getLevel();
+  if (level === 'province') renderProvinceLevel();
+  else if (level === 'prefecture') renderPrefectureLevel();
+  else renderPersonLevel();
+  updateZoomHint();
+}
+
+function updateZoomHint() {
+  if (!zoomHintEl) {
+    zoomHintEl = document.createElement('div');
+    zoomHintEl.className = 'zoom-hint';
+    document.getElementById('map').appendChild(zoomHintEl);
+  }
+  const level = getLevel();
+  const z = map.getZoom();
+  const hints = {
+    'province': `省级视图 (zoom ${z}) — 放大查看府级分布`,
+    'prefecture': `府级视图 (zoom ${z}) — 继续放大查看县级详情`,
+    'person': `县级详情 (zoom ${z})`
+  };
+  zoomHintEl.textContent = hints[level];
+  zoomHintEl.style.opacity = '1';
+  setTimeout(() => { zoomHintEl.style.opacity = '0.6'; }, 2000);
+}
+
+// ===== Event Handlers =====
+let renderTimeout = null;
+let lastLevel = null;
+
+function debouncedRender() {
+  if (renderTimeout) clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(() => {
+    renderCurrentLevel();
+  }, 300);
+}
+
+map.on('zoomend', () => {
+  const newLevel = getLevel();
+  if (newLevel !== lastLevel) {
+    lastLevel = newLevel;
+    renderCurrentLevel();
+  } else {
+    debouncedRender();
+  }
+});
+
+map.on('moveend', () => {
+  const level = getLevel();
+  if (level !== 'province') debouncedRender();
+});
+
+function filterDynasty(dy) {
+  currentDynasty = dy;
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.btn-${dy}`).classList.add('active');
+  renderCurrentLevel();
+}
+
+// ===== Init =====
+loadProvinceData();
+</script>
+</body>
+</html>

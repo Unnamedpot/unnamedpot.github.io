@@ -8,7 +8,8 @@ permalink: /project/
 <section class="section" id="project">
   <h2 class="section-title">Project</h2>
   <ul class="project-list">
-    {% for project in site.projects %}
+    {% assign sorted_projects = site.projects | sort: 'date' | reverse %}
+    {% for project in sorted_projects %}
       <li class="project-card-item">
       <a class="project-card" href="{{ project.url | relative_url }}">
         {%- comment -%} Thumbnail fallback: project cover -> default avatar {%- endcomment -%}

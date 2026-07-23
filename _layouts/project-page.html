@@ -12,15 +12,6 @@ layout: default
 
   <div class="post-content">
     {{ content }}
-
-    <div class="project-links">
-      {% if page.landing_url and page.landing_url != '' %}
-        <a href="{{ page.landing_url | relative_url }}">查看宣传页</a>
-      {% endif %}
-      {% if page.github_url and page.github_url != '' %}
-        <a href="{{ page.github_url }}" target="_blank" rel="noopener">GitHub 源码</a>
-      {% endif %}
-    </div>
   </div>
 
   <footer class="post-footer">
