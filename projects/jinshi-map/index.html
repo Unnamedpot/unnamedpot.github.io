@@ -7,6 +7,8 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>明清进士籍贯分布地图</title>
+<!-- Preload initial data so its fetch starts before the blocking Leaflet script / map tiles compete for connections -->
+<link rel="preload" as="fetch" href="data/province_summary.json" crossorigin="anonymous"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -129,11 +131,25 @@ let renderId = 0; // track render generation to cancel stale async renders
 
 // ===== Load Province Data =====
 async function loadProvinceData() {
-  const resp = await fetch('data/province_summary.json');
-  provinceData = await resp.json();
-  updateStats();
-  renderCurrentLevel();
-  document.getElementById('loading').style.display = 'none';
+  const loadingEl = document.getElementById('loading');
+  const t0 = performance.now();
+  try {
+    console.log(`[jinshi-map] fetch start @ ${(performance.now() - t0).toFixed(1)}ms`);
+    const resp = await fetch('data/province_summary.json');
+    console.log(`[jinshi-map] fetch returned @ ${(performance.now() - t0).toFixed(1)}ms (status=${resp.status})`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+    provinceData = await resp.json();
+    console.log(`[jinshi-map] resp.json() done @ ${(performance.now() - t0).toFixed(1)}ms`);
+    updateStats();
+    console.log(`[jinshi-map] updateStats done @ ${(performance.now() - t0).toFixed(1)}ms`);
+    renderCurrentLevel();
+    console.log(`[jinshi-map] renderProvinceLevel done @ ${(performance.now() - t0).toFixed(1)}ms`);
+    loadingEl.style.display = 'none';
+    console.log(`[jinshi-map] overlay hidden @ ${(performance.now() - t0).toFixed(1)}ms`);
+  } catch (e) {
+    console.error(`[jinshi-map] load failed @ ${(performance.now() - t0).toFixed(1)}ms`, e);
+    loadingEl.textContent = `Failed to load data: ${e.message}`;
+  }
 }
 
 function updateStats() {
@@ -229,18 +245,23 @@ async function renderPrefectureLevel() {
   const dynasties = currentDynasty === 'all' ? ['ming', 'qing'] : [currentDynasty];
   let allPrefs = [];
 
+  // Fetch all (prov, dy) prefecture data concurrently instead of serially
+  const tasks = [];
   for (const prov of visibleProvs) {
     for (const dy of dynasties) {
       if ((dy === 'ming' ? prov.ming_count : prov.qing_count) === 0) continue;
-      const data = await loadPrefectureData(prov.id, dy);
-      if (myRenderId !== renderId) return; // stale render, abort
-      if (data) {
-        data.forEach(pref => {
-          if (pref.lat && pref.lng && pref.count > 0) {
-            allPrefs.push({...pref, dynasty: dy, provName: prov.name});
-          }
-        });
-      }
+      tasks.push(loadPrefectureData(prov.id, dy).then(data => ({data, dy, prov})));
+    }
+  }
+  const results = await Promise.all(tasks);
+  if (myRenderId !== renderId) return; // stale render, abort
+  for (const {data, dy, prov} of results) {
+    if (data) {
+      data.forEach(pref => {
+        if (pref.lat && pref.lng && pref.count > 0) {
+          allPrefs.push({...pref, dynasty: dy, provName: prov.name});
+        }
+      });
     }
   }
 
@@ -327,24 +348,29 @@ async function renderPersonLevel() {
   const dynasties = currentDynasty === 'all' ? ['ming', 'qing'] : [currentDynasty];
   let allPeople = [];
 
+  // Fetch all (prov, dy) prefecture data concurrently instead of serially
+  const tasks = [];
   for (const prov of visibleProvs) {
     for (const dy of dynasties) {
       if ((dy === 'ming' ? prov.ming_count : prov.qing_count) === 0) continue;
-      const data = await loadPrefectureData(prov.id, dy);
-      if (myRenderId !== renderId) return; // stale render, abort
-      if (data) {
-        data.forEach(pref => {
-          (pref.people || []).forEach(person => {
-            if (person.lat && person.lng) {
-              const [lat, lng] = wgs84ToGcj02(person.lat, person.lng);
-              // Render a person if within ~4 degrees of the viewport center (zoom-independent, prevents rendering all 53k points)
-              if (Math.abs(lat - center.lat) < 4 && Math.abs(lng - center.lng) < 4) {
-                allPeople.push({...person, dynasty: dy, prefName: pref.name});
-              }
+      tasks.push(loadPrefectureData(prov.id, dy).then(data => ({data, dy, prov})));
+    }
+  }
+  const results = await Promise.all(tasks);
+  if (myRenderId !== renderId) return; // stale render, abort
+  for (const {data, dy} of results) {
+    if (data) {
+      data.forEach(pref => {
+        (pref.people || []).forEach(person => {
+          if (person.lat && person.lng) {
+            const [lat, lng] = wgs84ToGcj02(person.lat, person.lng);
+            // Render a person if within ~4 degrees of the viewport center (zoom-independent, prevents rendering all 53k points)
+            if (Math.abs(lat - center.lat) < 4 && Math.abs(lng - center.lng) < 4) {
+              allPeople.push({...person, dynasty: dy, prefName: pref.name});
             }
-          });
+          }
         });
-      }
+      });
     }
   }
 
@@ -397,7 +423,7 @@ async function renderPersonLevel() {
     const count = cluster.people.length;
     const color = currentDynasty === 'ming' ? '#e74c3c' :
                   currentDynasty === 'qing' ? '#3498db' : '#9b59b6';
-    const r = Math.max(6, Math.min(Math.pow(count, 0.8)*0.5, 200));
+    const r = Math.max(6, Math.min(Math.pow(count, 0.6)*2, 200));
 
     const circle = L.circleMarker([lat, lng], {
       radius: r, fillColor: color, fillOpacity: 0.7,
